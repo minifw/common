@@ -43,8 +43,8 @@ var_dump($file->get_content());
 $file->readfile();
 echo PHP_EOL;
 echo json_encode($file->get_parent()->ls(), JSON_UNESCAPED_UNICODE) . PHP_EOL;
-$file->rename($root . '/dir/测试', '');
-echo json_encode($file->get_parent()->get_parent()->ls(), JSON_UNESCAPED_UNICODE) . PHP_EOL;
+$new_file = $file->rename($root . '/dir/测试', '');
+echo json_encode($new_file->get_parent()->get_parent()->ls(), JSON_UNESCAPED_UNICODE) . PHP_EOL;
 
 echo PHP_EOL;
 

@@ -221,7 +221,7 @@ class File {
     /**
      *
      * @param \Minifw\Common\File $dest
-     * @return boolean
+     * @return \Minifw\Common\File 新路径的文件对象
      */
     public function copy($dest) {
         if (!file_exists($this->fs_path)) {
@@ -234,14 +234,17 @@ class File {
 
         $dest->get_parent()->mkdir();
 
-        return \copy($this->fs_path, $dest->fs_path);
+        if (\copy($this->fs_path, $dest->fs_path)) {
+            return $dest;
+        }
+        return false;
     }
 
     /**
      *
      * @param \Minifw\Common\File $dest
      * @param boolean $hidden
-     * @return boolean
+     * @return \Minifw\Common\File 新路径的文件对象
      * @throws Exception
      */
     public function copy_dir($dest, $hidden = false) {
@@ -295,7 +298,7 @@ class File {
     /**
      *
      * @param \Minifw\Common\File $dest
-     * @return boolean
+     * @return \Minifw\Common\File 新路径的文件对象
      */
     public function rename($dest) {
         if (!file_exists($this->fs_path)) {
@@ -309,8 +312,7 @@ class File {
         $dest->get_parent()->mkdir();
 
         if (\rename($this->fs_path, $dest->fs_path)) {
-            $this->set_fs_path($dest->fs_path);
-            return true;
+            return $dest;
         }
 
         return false;
