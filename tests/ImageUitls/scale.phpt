@@ -16,36 +16,36 @@ $img_list = [
 ];
 
 $file = new \Minifw\Common\File(__DIR__ . '/image');
-$file->copy_dir($path);
+$file->copyDir($path);
 
 foreach ($img_list as $img) {
-    ImageUtils::image_scale($path . '/' . $img, '_0_0', 0, 0);
+    ImageUtils::imageScale($path . '/' . $img, '_0_0', 0, 0);
 
-    $new_path = FileUtils::appent_tail($path . '/' . $img, '_0_0');
+    $new_path = FileUtils::appentTail($path . '/' . $img, '_0_0');
     $new_info = getimagesize($new_path);
     echo json_encode($new_info, JSON_UNESCAPED_UNICODE) . PHP_EOL;
 
-    ImageUtils::image_scale($path . '/' . $img, '_100_0', 100, 0);
+    ImageUtils::imageScale($path . '/' . $img, '_100_0', 100, 0);
 
-    $new_path = FileUtils::appent_tail($path . '/' . $img, '_100_0');
+    $new_path = FileUtils::appentTail($path . '/' . $img, '_100_0');
     $new_info = getimagesize($new_path);
     echo json_encode($new_info, JSON_UNESCAPED_UNICODE) . PHP_EOL;
 
-    ImageUtils::image_scale($path . '/' . $img, '_0_100', 0, 100);
+    ImageUtils::imageScale($path . '/' . $img, '_0_100', 0, 100);
 
-    $new_path = FileUtils::appent_tail($path . '/' . $img, '_0_100');
+    $new_path = FileUtils::appentTail($path . '/' . $img, '_0_100');
     $new_info = getimagesize($new_path);
     echo json_encode($new_info, JSON_UNESCAPED_UNICODE) . PHP_EOL;
 
-    ImageUtils::image_scale($path . '/' . $img, '_100_100', 100, 100);
+    ImageUtils::imageScale($path . '/' . $img, '_100_100', 100, 100);
 
-    $new_path = FileUtils::appent_tail($path . '/' . $img, '_100_100');
+    $new_path = FileUtils::appentTail($path . '/' . $img, '_100_100');
     $new_info = getimagesize($new_path);
     echo json_encode($new_info, JSON_UNESCAPED_UNICODE) . PHP_EOL;
 }
 
 $file = new \Minifw\Common\File($path);
-$file->clear_dir(true);
+$file->clearDir(true);
 ?>
 --EXPECTF--
 {"0":960,"1":646,"2":2,"3":"width=\"960\" height=\"646\"","bits":8,"channels":3,"mime":"image\/jpeg"}

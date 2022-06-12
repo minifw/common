@@ -19,48 +19,86 @@
 
 namespace Minifw\Common;
 
-use Minifw\Common\ImageUtils;
 use Minifw\Common\Exception;
+use Minifw\Common\ImageUtils;
 
-class Image {
-
+class Image
+{
     const FORMAT_GIF = 1;
     const FORMAT_JPG = 2;
     const FORMAT_PNG = 3;
 
+    /**
+     * @var int
+     */
     public static $default_quality = 90;
+    /**
+     * @var int
+     */
     public static $default_level = 2;
-    protected $image_obj = null;
+    /**
+     * @var \GdImage
+     */
+    protected $imageObj = null;
+    /**
+     * @var int
+     */
     protected $width = 0;
+    /**
+     * @var int
+     */
     protected $height = 0;
+    /**
+     * @var int
+     */
     protected $format = 0;
 
-    public function __construct() {
-
+    public function __construct()
+    {
     }
 
-    public function load_image($full) {
+    /**
+     * @param $full
+     * @return mixed
+     */
+    public function loadImage($full)
+    {
         $this->destroy();
 
-        $info = ImageUtils::get_image_info($full);
+        $info = ImageUtils::getImageInfo($full);
         $this->format = $info['format'];
         $this->width = $info['width'];
         $this->height = $info['height'];
 
-        $this->image_obj = ImageUtils::load_image_obj($full, $this->format);
+        $this->imageObj = ImageUtils::loadImageObj($full, $this->format);
+
         return $this;
     }
 
-    public function init_image($format, $width, $height, $bgcolor = null) {
+    /**
+     * @param $format
+     * @param $width
+     * @param $height
+     * @param $bgcolor
+     * @return mixed
+     */
+    public function initImage($format, $width, $height, $bgcolor = null)
+    {
         $this->destroy();
-        $this->image_obj = ImageUtils::get_new_image($format, $width, $height, $bgcolor);
+        $this->imageObj = ImageUtils::getNewImage($format, $width, $height, $bgcolor);
         $this->format = $format;
         $this->width = $width;
         $this->height = $height;
+
         return $this;
     }
 
-    public function rotate($degree) {
+    /**
+     * @param $degree
+     * @return mixed
+     */
+    public function rotate($degree)
+    {
         if ($degree % 90 !== 0) {
             throw new Exception('不支持该操作');
         }
@@ -68,9 +106,9 @@ class Image {
         if ($degree == 0) {
             return $this;
         }
-        $new_obj = imagerotate($this->image_obj, $degree, 0);
-        imagedestroy($this->image_obj);
-        $this->image_obj = $new_obj;
+        $new_obj = imagerotate($this->imageObj, $degree, 0);
+        imagedestroy($this->imageObj);
+        $this->imageObj = $new_obj;
 
         if ($degree % 180 !== 0) {
             $tmp = $this->height;
@@ -81,26 +119,63 @@ class Image {
         return $this;
     }
 
-    public function merge($full, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h) {
-        $info = ImageUtils::get_image_info($full);
-        $src_obj = ImageUtils::load_image_obj($full, $info['format']);
-        imagecopyresampled($this->image_obj, $src_obj, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h);
+    /**
+     * @param $full
+     * @param $dst_x
+     * @param $dst_y
+     * @param $src_x
+     * @param $src_y
+     * @param $dst_w
+     * @param $dst_h
+     * @param $src_w
+     * @param $src_h
+     * @return mixed
+     */
+    public function merge($full, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h)
+    {
+        $info = ImageUtils::getImageInfo($full);
+        $src_obj = ImageUtils::loadImageObj($full, $info['format']);
+        imagecopyresampled($this->imageObj, $src_obj, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h);
         imagedestroy($src_obj);
+
         return $this;
     }
 
-    public function transform($new_w, $new_h, $bgcolor, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h) {
-        $src_obj = $this->image_obj;
-        $this->image_obj = ImageUtils::get_new_image($this->format, $new_w, $new_h, $bgcolor);
+    /**
+     * @param $new_w
+     * @param $new_h
+     * @param $bgcolor
+     * @param $dst_x
+     * @param $dst_y
+     * @param $src_x
+     * @param $src_y
+     * @param $dst_w
+     * @param $dst_h
+     * @param $src_w
+     * @param $src_h
+     * @return mixed
+     */
+    public function transform($new_w, $new_h, $bgcolor, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h)
+    {
+        $src_obj = $this->imageObj;
+        $this->imageObj = ImageUtils::getNewImage($this->format, $new_w, $new_h, $bgcolor);
         $this->width = $new_w;
         $this->height = $new_h;
 
-        imagecopyresampled($this->image_obj, $src_obj, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h);
+        imagecopyresampled($this->imageObj, $src_obj, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h);
         imagedestroy($src_obj);
+
         return $this;
     }
 
-    public function round_corner($r, $level = -1, $bgcolor = null) {
+    /**
+     * @param $r
+     * @param $level
+     * @param $bgcolor
+     * @return mixed
+     */
+    public function roundCorner($r, $level = -1, $bgcolor = null)
+    {
         if ($level < 0) {
             $level = self::$default_level;
         }
@@ -124,26 +199,39 @@ class Image {
         if ($bgcolor == null) {
             switch ($this->format) {
                 case self::FORMAT_GIF:
-                    $bgcolor = imagecolortransparent($this->image_obj);
+                    $bgcolor = imagecolortransparent($this->imageObj);
                     break;
                 case self::FORMAT_JPG:
-                    $bgcolor = imagecolorallocate($this->image_obj, 255, 255, 255);
+                    $bgcolor = imagecolorallocate($this->imageObj, 255, 255, 255);
                     break;
                 case self::FORMAT_PNG:
-                    $bgcolor = imagecolorallocatealpha($this->image_obj, 0, 0, 0, 127);
+                    $bgcolor = imagecolorallocatealpha($this->imageObj, 0, 0, 0, 127);
                     break;
             }
         }
 
-        $this->round_one_corner($r, $r, $r, 0, 0, $w, $h, $level, $bgcolor);
-        $this->round_one_corner($r, $this->width - $r, $r, $this->width - $w, 0, $w, $h, $level, $bgcolor);
-        $this->round_one_corner($r, $r, $this->height - $r, 0, $this->height - $h, $w, $h, $level, $bgcolor);
-        $this->round_one_corner($r, $this->width - $r, $this->height - $r, $this->width - $w, $this->height - $h, $w, $h, $level, $bgcolor);
+        $this->roundOneCorner($r, $r, $r, 0, 0, $w, $h, $level, $bgcolor);
+        $this->roundOneCorner($r, $this->width - $r, $r, $this->width - $w, 0, $w, $h, $level, $bgcolor);
+        $this->roundOneCorner($r, $r, $this->height - $r, 0, $this->height - $h, $w, $h, $level, $bgcolor);
+        $this->roundOneCorner($r, $this->width - $r, $this->height - $r, $this->width - $w, $this->height - $h, $w, $h, $level, $bgcolor);
 
         return $this;
     }
 
-    public function round_one_corner($r, $cx, $cy, $x, $y, $w, $h, $level, $bgcolor) {
+    /**
+     * @param $r
+     * @param $cx
+     * @param $cy
+     * @param $x
+     * @param $y
+     * @param $w
+     * @param $h
+     * @param $level
+     * @param $bgcolor
+     * @return mixed
+     */
+    public function roundOneCorner($r, $cx, $cy, $x, $y, $w, $h, $level, $bgcolor)
+    {
         $br = (($bgcolor >> 16) & 0xFF);
         $bg = (($bgcolor >> 8) & 0xFF);
         $bb = ($bgcolor & 0xFF);
@@ -154,15 +242,13 @@ class Image {
                 $px = $x + $i;
                 $py = $y + $j;
 
-                $alpha = self::calc_alpha($r, $px - $cx, $py - $cy, $level);
+                $alpha = self::calcAlpha($r, $px - $cx, $py - $cy, $level);
                 if ($alpha <= 0) {
                     continue;
-                }
-                elseif ($alpha >= 127) {
-                    imagesetpixel($this->image_obj, $px, $py, $bgcolor);
-                }
-                else {
-                    $color = imagecolorat($this->image_obj, $px, $py);
+                } elseif ($alpha >= 127) {
+                    imagesetpixel($this->imageObj, $px, $py, $bgcolor);
+                } else {
+                    $color = imagecolorat($this->imageObj, $px, $py);
                     $alpah_c = 127 - $alpha;
 
                     $cr = (($color >> 16) & 0xFF) * $alpah_c + $br * $alpha;
@@ -171,66 +257,94 @@ class Image {
                     $ca = (($color >> 24) & 0xFF) * $alpah_c + $ba * $alpha;
 
                     $color = ($ca / 127) << 24 | ($cr / 127) << 16 | ($cg / 127) << 8 | ($cb / 127);
-                    imagesetpixel($this->image_obj, $px, $py, $color);
+                    imagesetpixel($this->imageObj, $px, $py, $color);
                 }
             }
         }
+
         return $this;
     }
 
-    public function save($dest, $quality = -1) {
+    /**
+     * @param $dest
+     * @param $quality
+     * @return mixed
+     */
+    public function save($dest, $quality = -1)
+    {
         if ($quality < 0) {
             $quality = self::$default_quality;
         }
         switch ($this->format) {
             case self::FORMAT_GIF:
-                imagegif($this->image_obj, $dest);
+                imagegif($this->imageObj, $dest);
                 break;
             case self::FORMAT_JPG:
-                imagejpeg($this->image_obj, $dest, $quality);
+                imagejpeg($this->imageObj, $dest, $quality);
                 break;
             case self::FORMAT_PNG:
-                //imagealphablending($image_obj, true);
-                //imagesavealpha($image_obj, true);
-                imagepng($this->image_obj, $dest);
+                //imagealphablending($imageObj, true);
+                //imagesavealpha($imageObj, true);
+                imagepng($this->imageObj, $dest);
                 break;
         }
+
         return $this;
     }
 
-    public function destroy() {
-        if ($this->image_obj === null) {
+    /**
+     * @return null
+     */
+    public function destroy()
+    {
+        if ($this->imageObj === null) {
             return;
         }
-        imagedestroy($this->image_obj);
-        $this->image_obj = null;
+        imagedestroy($this->imageObj);
+        $this->imageObj = null;
         $this->width = 0;
         $this->height = 0;
         $this->format = 0;
     }
 
-    public function get_format() {
+    /**
+     * @return mixed
+     */
+    public function getFormat()
+    {
         return $this->format;
     }
 
-    public function get_size() {
+    public function getSize()
+    {
         return [$this->width, $this->height];
     }
 
-    public function get_obj() {
-        return $this->image_obj;
+    /**
+     * @return mixed
+     */
+    public function getObj()
+    {
+        return $this->imageObj;
     }
 
     //////////////////////////////////////
 
-    public static function calc_alpha($r, $x, $y, $level) {
+    /**
+     * @param $r
+     * @param $x
+     * @param $y
+     * @param $level
+     * @return int
+     */
+    public static function calcAlpha($r, $x, $y, $level)
+    {
         $r2 = $r * $r;
         $offset = $x * $x + $y * $y - $r2;
         if ($level <= 0) {
             if ($offset > 0) {
                 return 127;
-            }
-            else {
+            } else {
                 return 0;
             }
         }
@@ -239,8 +353,7 @@ class Image {
         $limit = 1.42 * $r;
         if ($offset >= $limit) {
             return 127;
-        }
-        elseif ($offset < -1 * $limit) {
+        } elseif ($offset < -1 * $limit) {
             return 0;
         }
 
@@ -266,5 +379,4 @@ class Image {
 
         return intval(($count / $len / $len) * 127);
     }
-
 }

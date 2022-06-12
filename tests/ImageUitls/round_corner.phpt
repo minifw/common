@@ -16,25 +16,25 @@ $img_list = [
 ];
 
 $file = new \Minifw\Common\File(__DIR__ . '/image');
-$file->copy_dir($path);
+$file->copyDir($path);
 
 foreach ($img_list as $img) {
-    ImageUtils::image_round_corner($path . '/' . $img, '_r2', 200, 2);
+    ImageUtils::imageRoundCorner($path . '/' . $img, '_r2', 200, 2);
 
-    $new_path = FileUtils::appent_tail($path . '/' . $img, '_r2');
+    $new_path = FileUtils::appentTail($path . '/' . $img, '_r2');
     $new_info = getimagesize($new_path);
     echo json_encode($new_info, JSON_UNESCAPED_UNICODE) . PHP_EOL;
 
-    ImageUtils::image_round_corner($path . '/' . $img, '_r0', 200, 0);
+    ImageUtils::imageRoundCorner($path . '/' . $img, '_r0', 200, 0);
 
-    $new_path = FileUtils::appent_tail($path . '/' . $img, '_r0');
+    $new_path = FileUtils::appentTail($path . '/' . $img, '_r0');
     $new_info = getimagesize($new_path);
     echo json_encode($new_info, JSON_UNESCAPED_UNICODE) . PHP_EOL;
 }
 
 
 $file = new \Minifw\Common\File($path);
-$file->clear_dir(true);
+$file->clearDir(true);
 ?>
 --EXPECTF--
 {"0":960,"1":646,"2":2,"3":"width=\"960\" height=\"646\"","bits":8,"channels":3,"mime":"image\/jpeg"}

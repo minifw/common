@@ -22,110 +22,165 @@ namespace Minifw\Common;
 use Minifw\Common\Exception;
 use Minifw\Common\FileUtils;
 
-class File {
+class File
+{
+    /**
+     * @var string
+     */
+    public static $defaultFsEncoding = '';
+    /**
+     * @var mixed
+     */
+    protected $fsEncoding;
+    /**
+     * @var string
+     */
+    protected $appEncoding = 'utf-8';
+    /**
+     * @var string
+     */
+    protected $fsPath = '';
+    /**
+     * @var string
+     */
+    protected $appPath = '';
+    /**
+     * @var array
+     */
+    public static $mimeHash = [
+        'css' => 'text/css',
+        'html' => 'text/html',
+        'js' => 'text/javascript'
+    ];
 
-    public static $default_fs_encoding = '';
-    protected $fs_encoding;
-    protected $app_encoding = 'utf-8';
-    protected $fs_path = '';
-    protected $app_path = '';
+    /**
+     * @param $appPath
+     * @param $fsPath
+     * @param null $fsEncoding
+     */
+    public function __construct($appPath, $fsPath = null, $fsEncoding = null)
+    {
+        if (empty($fsEncoding)) {
+            $this->fsEncoding = self::$defaultFsEncoding;
+        } else {
+            $this->fsEncoding = $fsEncoding;
+        }
 
-    public function __construct($app_path, $fs_path = null, $fs_encoding = null) {
-        if (empty($fs_encoding)) {
-            $this->fs_encoding = self::$default_fs_encoding;
-        }
-        else {
-            $this->fs_encoding = $fs_encoding;
-        }
-
-        if (!empty($app_path)) {
-            $this->set_app_path($app_path);
-        }
-        elseif (!empty($fs_path)) {
-            $this->set_fs_path($fs_path);
-        }
-        else {
+        if (!empty($appPath)) {
+            $this->setAppPath($appPath);
+        } elseif (!empty($fsPath)) {
+            $this->setFsPath($fsPath);
+        } else {
             throw new Exception('必须指定路径');
         }
     }
 
-    public function get_fs_path() {
-        return $this->fs_path;
+    /**
+     * @return mixed
+     */
+    public function getFsPath()
+    {
+        return $this->fsPath;
     }
 
-    public function get_app_path() {
-        return $this->app_path;
+    /**
+     * @return mixed
+     */
+    public function getAppPath()
+    {
+        return $this->appPath;
     }
 
-    public function set_app_path($path) {
+    /**
+     * @param $path
+     */
+    public function setAppPath($path)
+    {
         $path = rtrim($path, '/\\');
 
-        $this->app_path = $path;
-        if (!empty($this->fs_encoding) && $this->fs_encoding != $this->app_encoding) {
-            $this->fs_path = iconv($this->app_encoding, $this->fs_encoding, $this->app_path);
-        }
-        else {
-            $this->fs_path = $this->app_path;
+        $this->appPath = $path;
+        if (!empty($this->fsEncoding) && $this->fsEncoding != $this->appEncoding) {
+            $this->fsPath = iconv($this->appEncoding, $this->fsEncoding, $this->appPath);
+        } else {
+            $this->fsPath = $this->appPath;
         }
     }
 
-    public function set_fs_path($path) {
+    /**
+     * @param $path
+     */
+    public function setFsPath($path)
+    {
         $path = rtrim($path, '/\\');
 
-        $this->fs_path = $path;
-        if (!empty($this->fs_encoding) && $this->fs_encoding != $this->app_encoding) {
-            $this->app_path = iconv($this->fs_encoding, $this->app_encoding, $this->fs_path);
-        }
-        else {
-            $this->app_path = $this->fs_path;
+        $this->fsPath = $path;
+        if (!empty($this->fsEncoding) && $this->fsEncoding != $this->appEncoding) {
+            $this->appPath = iconv($this->fsEncoding, $this->appEncoding, $this->fsPath);
+        } else {
+            $this->appPath = $this->fsPath;
         }
     }
 
-    public function get_content() {
-        if (file_exists($this->fs_path)) {
-            return file_get_contents($this->fs_path);
+    public function getContent()
+    {
+        if (file_exists($this->fsPath)) {
+            return file_get_contents($this->fsPath);
         }
+
         return '';
     }
 
-    public function call($function) {
-        return call_user_func($function, $this->fs_path);
+    /**
+     * @param $function
+     */
+    public function call($function)
+    {
+        return call_user_func($function, $this->fsPath);
     }
 
     /**
      *
      * @return \Minifw\Common\File
      */
-    public function get_parent() {
-        $parent = FileUtils::dirname($this->app_path);
-        return new File($parent, '', $this->fs_encoding);
+    public function getParent()
+    {
+        $parent = FileUtils::dirname($this->appPath);
+
+        return new File($parent, '', $this->fsEncoding);
     }
 
-    public function is_dir_empty() {
-        if (is_dir($this->fs_path)) {
-            $dir = opendir($this->fs_path);
+    public function isDirEmpty()
+    {
+        if (is_dir($this->fsPath)) {
+            $dir = opendir($this->fsPath);
             while (false !== ($file = readdir($dir))) {
                 if ($file == '.' || $file == '..') {
                     continue;
-                }
-                else {
+                } else {
                     closedir($dir);
+
                     return false;
                 }
             }
             closedir($dir);
+
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
-    public function ls($ext = '', $hidden = false) {
-        if (is_dir($this->fs_path)) {
+    /**
+     * @param $ext
+     * @param $hidden
+     * @return mixed
+     */
+    public function ls($ext = '', $hidden = false)
+    {
+        if (is_dir($this->fsPath)) {
             $res = [];
 
-            $full = $this->fs_path;
+            $full = $this->fsPath;
             if (substr($full, -1) !== '/') {
                 $full .= '/';
             }
@@ -145,13 +200,13 @@ class File {
                         }
                     }
 
-                    if (!empty($this->fs_encoding) && $this->fs_encoding != $this->app_encoding) {
-                        $file = iconv($this->fs_encoding, $this->app_encoding, $file);
+                    if (!empty($this->fsEncoding) && $this->fsEncoding != $this->appEncoding) {
+                        $file = iconv($this->fsEncoding, $this->appEncoding, $file);
                     }
 
                     $res[] = [
                         'name' => $file,
-                        'dir' => is_dir($this->app_path . '/' . $file),
+                        'dir' => is_dir($this->appPath . '/' . $file)
                     ];
                 }
                 closedir($dh);
@@ -160,62 +215,74 @@ class File {
             usort($res, function ($left, $right) {
                 if ($left['dir'] == $right['dir']) {
                     return strcmp($left['name'], $right['name']);
-                }
-                elseif ($left['dir']) {
+                } elseif ($left['dir']) {
                     return -1;
                 }
+
                 return 1;
             });
 
             return $res;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
-    public function get_mime() {
-        if (file_exists($this->fs_path)) {
-            $pinfo = pathinfo($this->fs_path);
+    /**
+     * @return mixed
+     */
+    public function getMime()
+    {
+        if (file_exists($this->fsPath)) {
+            $pinfo = pathinfo($this->fsPath);
             $ext = isset($pinfo['extension']) ? strtolower($pinfo['extension']) : '';
-            $mime_type = 'application/octet-stream';
-            if (isset(self::$mime_hash[$ext])) {
-                $mime_type = self::$mime_hash[$ext];
-            }
-            else {
+            $mimeType = 'application/octet-stream';
+            if (isset(self::$mimeHash[$ext])) {
+                $mimeType = self::$mimeHash[$ext];
+            } else {
                 $fi = new \finfo(FILEINFO_MIME_TYPE);
-                $mime_type = $fi->file($this->fs_path);
+                $mimeType = $fi->file($this->fsPath);
             }
-            return $mime_type;
+
+            return $mimeType;
         }
+
         return null;
     }
 
-    public function readfile() {
+    public function readfile()
+    {
         if (!headers_sent()) {
-            $mime_type = $this->get_mime();
-            if ($mime_type !== null) {
-                header('Content-Type: ' . $mime_type);
+            $mimeType = $this->getMime();
+            if ($mimeType !== null) {
+                header('Content-Type: ' . $mimeType);
             }
         }
-        readfile($this->fs_path);
+        readfile($this->fsPath);
     }
 
     ///////////////////////////////////////
 
-    public function mkdir() {
-        if (!file_exists($this->fs_path)) {
-            return \mkdir($this->fs_path, 0777, true);
-        }
-        elseif (!is_dir($this->fs_path)) {
+    public function mkdir()
+    {
+        if (!file_exists($this->fsPath)) {
+            return \mkdir($this->fsPath, 0777, true);
+        } elseif (!is_dir($this->fsPath)) {
             throw new Exception('已存在同名文件');
         }
+
         return true;
     }
 
-    public function put_content($data, $flags = 0) {
-        $this->get_parent()->mkdir();
-        return file_put_contents($this->fs_path, $data, $flags);
+    /**
+     * @param $data
+     * @param $flags
+     */
+    public function putContent($data, $flags = 0)
+    {
+        $this->getParent()->mkdir();
+
+        return file_put_contents($this->fsPath, $data, $flags);
     }
 
     /**
@@ -223,20 +290,22 @@ class File {
      * @param \Minifw\Common\File $dest
      * @return \Minifw\Common\File 新路径的文件对象
      */
-    public function copy($dest) {
-        if (!file_exists($this->fs_path)) {
+    public function copy($dest)
+    {
+        if (!file_exists($this->fsPath)) {
             return false;
         }
 
         if (!is_object($dest)) {
-            $dest = new File($dest, null, $this->fs_encoding);
+            $dest = new File($dest, null, $this->fsEncoding);
         }
 
-        $dest->get_parent()->mkdir();
+        $dest->getParent()->mkdir();
 
-        if (\copy($this->fs_path, $dest->fs_path)) {
+        if (\copy($this->fsPath, $dest->fsPath)) {
             return $dest;
         }
+
         return false;
     }
 
@@ -247,22 +316,23 @@ class File {
      * @return \Minifw\Common\File 新路径的文件对象
      * @throws Exception
      */
-    public function copy_dir($dest, $hidden = false) {
+    public function copyDir($dest, $hidden = false)
+    {
         if (!is_object($dest)) {
-            $dest = new File($dest, null, $this->fs_encoding);
+            $dest = new File($dest, null, $this->fsEncoding);
         }
 
         $dest->mkdir();
 
-        if (!\is_dir($dest->fs_path) || !\is_dir($this->fs_path)) {
+        if (!\is_dir($dest->fsPath) || !\is_dir($this->fsPath)) {
             throw new Exception('对象不是目录');
         }
 
-        $from_dir = $this->fs_path;
+        $from_dir = $this->fsPath;
         if (substr($from_dir, -1) !== '/') {
             $from_dir .= '/';
         }
-        $to_dir = $dest->fs_path;
+        $to_dir = $dest->fsPath;
         if (substr($to_dir, -1) !== '/') {
             $to_dir .= '/';
         }
@@ -279,13 +349,12 @@ class File {
                 $from = $from_dir . $file;
                 $to = $to_dir . $file;
 
-                $file_from = new File(null, $from, $this->fs_encoding);
-                $file_to = new File(null, $to, $this->fs_encoding);
+                $file_from = new File(null, $from, $this->fsEncoding);
+                $file_to = new File(null, $to, $this->fsEncoding);
 
                 if (is_dir($from)) {
-                    $file_from->copy_dir($file_to, $hidden);
-                }
-                else {
+                    $file_from->copyDir($file_to, $hidden);
+                } else {
                     $file_from->copy($file_to);
                 }
             }
@@ -300,37 +369,41 @@ class File {
      * @param \Minifw\Common\File $dest
      * @return \Minifw\Common\File 新路径的文件对象
      */
-    public function rename($dest) {
-        if (!file_exists($this->fs_path)) {
+    public function rename($dest)
+    {
+        if (!file_exists($this->fsPath)) {
             return false;
         }
 
         if (!is_object($dest)) {
-            $dest = new File($dest, null, $this->fs_encoding);
+            $dest = new File($dest, null, $this->fsEncoding);
         }
 
-        $dest->get_parent()->mkdir();
+        $dest->getParent()->mkdir();
 
-        if (\rename($this->fs_path, $dest->fs_path)) {
+        if (\rename($this->fsPath, $dest->fsPath)) {
             return $dest;
         }
 
         return false;
     }
 
-    public function delete($delete_parent = false) {
-        if (file_exists($this->fs_path)) {
-            if (is_dir($this->fs_path)) {
-                rmdir($this->fs_path);
-            }
-            else {
-                @unlink($this->fs_path);
+    /**
+     * @param $delete_parent
+     */
+    public function delete($delete_parent = false)
+    {
+        if (file_exists($this->fsPath)) {
+            if (is_dir($this->fsPath)) {
+                rmdir($this->fsPath);
+            } else {
+                @unlink($this->fsPath);
             }
 
             if ($delete_parent) {
-                $parent = $this->get_parent();
+                $parent = $this->getParent();
 
-                if ($parent->is_dir_empty()) {
+                if ($parent->isDirEmpty()) {
                     $parent->delete();
                 }
             }
@@ -339,8 +412,9 @@ class File {
         return true;
     }
 
-    public function delete_with_tail() {
-        $pinfo = pathinfo($this->fs_path);
+    public function deleteWithTail()
+    {
+        $pinfo = pathinfo($this->fsPath);
         $dir = $pinfo['dirname'] . '/';
         $name = $pinfo['filename'];
         $files = [];
@@ -358,19 +432,24 @@ class File {
         }
 
         foreach ($files as $one) {
-            $file = new File(null, $one, $this->fs_encoding);
+            $file = new File(null, $one, $this->fsEncoding);
             $file->delete();
         }
 
         return true;
     }
 
-    public function clear_dir($delete_self = false) {
-        if (!is_dir($this->fs_path)) {
+    /**
+     * @param $delete_self
+     * @return null
+     */
+    public function clearDir($delete_self = false)
+    {
+        if (!is_dir($this->fsPath)) {
             return;
         }
 
-        $full = $this->fs_path;
+        $full = $this->fsPath;
         if (substr($full, -1) !== '/') {
             $full .= '/';
         }
@@ -384,10 +463,9 @@ class File {
                 $sub = $full . $file;
 
                 if (is_dir($sub)) {
-                    $file = new File(null, $sub, $this->fs_encoding);
-                    $file->clear_dir(true);
-                }
-                else {
+                    $file = new File(null, $sub, $this->fsEncoding);
+                    $file->clearDir(true);
+                } else {
                     @unlink($sub);
                 }
             }
@@ -401,34 +479,44 @@ class File {
 
     /////////////////////////////////////////////////////
 
-    public function init_file($filesize) {
-        $dir = FileUtils::dirname($this->fs_path);
+    /**
+     * @param $filesize
+     */
+    public function initFile($filesize)
+    {
+        $dir = FileUtils::dirname($this->fsPath);
         if (!file_exists($dir)) {
             \mkdir($dir, 0777, true);
         }
 
-        $dh = fopen($this->fs_path, 'w+');
+        $dh = fopen($this->fsPath, 'w+');
         if ($dh === false) {
             throw new Exception('文件建立失败');
         }
         if (!ftruncate($dh, $filesize)) {
-            unlink($this->fs_path);
+            unlink($this->fsPath);
             throw new Exception('文件建立失败');
         }
         fclose($dh);
 
-        $cfg_path = $this->fs_path . '.ucfg';
-        $dh = fopen($cfg_path, 'w+');
+        $cfgPath = $this->fsPath . '.ucfg';
+        $dh = fopen($cfgPath, 'w+');
         if ($dh === false) {
             throw new Exception('文件建立失败');
         }
         fclose($dh);
     }
 
-    public function write_chunk($chunk, $total, $file) {
-        $cfg_path = $this->fs_path . '.ucfg';
+    /**
+     * @param $chunk
+     * @param $total
+     * @param $file
+     */
+    public function writeChunk($chunk, $total, $file)
+    {
+        $cfgPath = $this->fsPath . '.ucfg';
 
-        if (!file_exists($this->fs_path) || !file_exists($cfg_path)) {
+        if (!file_exists($this->fsPath) || !file_exists($cfgPath)) {
             throw new Exception('文件不存在');
         }
 
@@ -437,17 +525,16 @@ class File {
         $size = strlen($content);
         unlink($tmp_name);
 
-        $dh = fopen($this->fs_path, 'r+');
+        $dh = fopen($this->fsPath, 'r+');
         if ($chunk == $total - 1) {
             fseek($dh, -1 * $size, SEEK_END);
-        }
-        else {
+        } else {
             fseek($dh, $size * $chunk, SEEK_SET);
         }
         fwrite($dh, $content, $size);
         fclose($dh);
 
-        $cfg = file($cfg_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $cfg = file($cfgPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         if ($cfg == null || $cfg == '') {
             $cfg = [
                 $total, 0, str_repeat('0', $total)
@@ -458,7 +545,6 @@ class File {
         if ($cfg[1] === false) {
             $cfg[1] = $total;
         }
-        file_put_contents($cfg_path, implode("\n", $cfg));
+        file_put_contents($cfgPath, implode("\n", $cfg));
     }
-
 }

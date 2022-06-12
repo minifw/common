@@ -16,18 +16,18 @@ $img_list = [
 ];
 
 $file = new \Minifw\Common\File(__DIR__ . '/image');
-$file->copy_dir($path);
+$file->copyDir($path);
 
 foreach ($img_list as $img) {
-    ImageUtils::image_scale_padding($path . '/' . $img, '_100_100_padding', 100, 100);
+    ImageUtils::imageScalePadding($path . '/' . $img, '_100_100_padding', 100, 100);
 
-    $new_path = FileUtils::appent_tail($path . '/' . $img, '_100_100_padding');
+    $new_path = FileUtils::appentTail($path . '/' . $img, '_100_100_padding');
     $new_info = getimagesize($new_path);
     echo json_encode($new_info, JSON_UNESCAPED_UNICODE) . PHP_EOL;
 }
 
 $file = new \Minifw\Common\File($path);
-$file->clear_dir(true);
+$file->clearDir(true);
 ?>
 --EXPECTF--
 {"0":100,"1":100,"2":2,"3":"width=\"100\" height=\"100\"","bits":8,"channels":3,"mime":"image\/jpeg"}

@@ -19,15 +19,16 @@
 
 namespace Minifw\Common;
 
-class Utils {
-
+class Utils
+{
     /**
      * 清除所有的html标记
      *
      * @param string $str 要处理的数据
      * @return string 处理后的数据
      */
-    public static function strip_tags($str) {
+    public static function stripTags($str)
+    {
         return preg_replace('/\<(\/?[a-zA-Z0-9]+)(\s+[^>]*)?\/?\>/i', '', $str);
     }
 
@@ -37,7 +38,8 @@ class Utils {
      * @param string $str 要判断的字符串
      * @return bool 具有标记返回true，否则返回fasle
      */
-    public static function is_rich($str) {
+    public static function isRich($str)
+    {
         return boolval(preg_match('/\<(\/?[a-zA-Z0-9]+)(\s+[^>]*)?\/?\>/i', $str));
     }
 
@@ -48,9 +50,11 @@ class Utils {
      * @param int $len 要截取的长度
      * @return string 截取的结果
      */
-    public static function sub_text($str, $begin, $len, $encoding = 'utf-8') {
-        $str = self::strip_tags($str);
+    public static function subText($str, $begin, $len, $encoding = 'utf-8')
+    {
+        $str = self::stripTags($str);
         $str = preg_replace('/(\s|&nbsp;)+/i', ' ', $str);
+
         return mb_substr($str, $begin, $len, $encoding);
     }
 
@@ -61,15 +65,17 @@ class Utils {
      * @param int $len 要截取的长度
      * @return string 截取的结果
      */
-    public static function sub_rich($str, $begin, $len, $encoding = 'utf-8') {
-        if (self::is_rich($str)) {
+    public static function subRich($str, $begin, $len, $encoding = 'utf-8')
+    {
+        if (self::isRich($str)) {
             $str = preg_replace('/\r/i', '', preg_replace('/\n/i', '', $str));
             $str = preg_replace('/\<br[^>]*\>/i', "\n", preg_replace('/\<p[^>]*\>/i', "\n", $str));
-            $str = self::strip_tags($str);
+            $str = self::stripTags($str);
         }
         $str = preg_replace('/^\s*\n/im', '', preg_replace('/(\t| |　|&nbsp;)+/i', ' ', $str));
         $str = mb_substr($str, $begin, $len, $encoding);
         $str = preg_replace('/^([^\r\n]*)\r?\n?$/im', "<p>$1</p>", $str);
+
         return $str;
     }
 
@@ -79,46 +85,77 @@ class Utils {
      * @param string $str 字符串
      * @return int 长度
      */
-    public static function str_len($str, $encoding = 'utf-8') {
+    public static function strLen($str, $encoding = 'utf-8')
+    {
         return mb_strlen($str, $encoding);
     }
 
-    public static function is_email($str) {
+    /**
+     * @param $str
+     */
+    public static function isEmail($str)
+    {
         if (!filter_var($str, FILTER_VALIDATE_EMAIL)) {
             return false;
         }
+
         return true;
     }
 
-    public static function is_phone($str) {
+    /**
+     * @param $str
+     */
+    public static function isPhone($str)
+    {
         if (!preg_match("/^1\d{10}$/", $str)) {
             return false;
         }
+
         return true;
     }
 
-    public static function is_tel($str) {
+    /**
+     * @param $str
+     */
+    public static function isTel($str)
+    {
         if (!preg_match("/^\d{3,4}-\d{7,8}(-\d{1,6})?$/", $str)) {
             return false;
         }
+
         return true;
     }
 
-    public static function is_num($str) {
+    /**
+     * @param $str
+     */
+    public static function isNum($str)
+    {
         if (!preg_match("/^-?\d+(\.\d+)?$/", $str)) {
             return false;
         }
+
         return true;
     }
 
-    public static function is_positive($str) {
+    /**
+     * @param $str
+     */
+    public static function isPositive($str)
+    {
         if (!preg_match("/^\d+(\.\d+)?$/", $str)) {
             return false;
         }
+
         return true;
     }
 
-    public static function show_duration($duration) {
+    /**
+     * @param $duration
+     * @return string
+     */
+    public static function showDuration($duration)
+    {
         $hour = intval($duration / 3600);
         if ($hour < 10) {
             $hour = '0' . $hour;
@@ -132,10 +169,16 @@ class Utils {
         if ($sec < 10) {
             $sec = '0' . $sec;
         }
+
         return $hour . ':' . $min . ':' . $sec;
     }
 
-    public static function show_size($size) {
+    /**
+     * @param $size
+     * @return string
+     */
+    public static function showSize($size)
+    {
         $unit = ['', ' K', ' M', ' G', ' T', ' P', ' E', ' Z', ' Y'];
         $cur_unit = 0;
 
@@ -146,12 +189,10 @@ class Utils {
 
         if ($size >= 100) {
             $size = bcdiv($size, 1, 0);
-        }
-        elseif ($size >= 10) {
+        } elseif ($size >= 10) {
             $size = bcdiv($size, 1, 1);
         }
 
         return $size . $unit[$cur_unit];
     }
-
 }

@@ -19,23 +19,54 @@
 
 namespace Minifw\Common;
 
-class Random {
-
+class Random
+{
+    /**
+     * @var string
+     */
     public static $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_[]{}<>~`+=,.;:/?|';
+    /**
+     * @var string
+     */
     public static $alphas = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    /**
+     * @var string
+     */
     public static $digits = '0123456789';
-    protected static $char_len;
-    protected static $alpha_len;
-    protected static $digit_len;
+    /**
+     * @var mixed
+     */
+    protected static $charLen;
+    /**
+     * @var mixed
+     */
+    protected static $alphaLen;
+    /**
+     * @var mixed
+     */
+    protected static $digitLen;
 
-    public static function gen_int($min, $max) {
+    /**
+     * @param $min
+     * @param $max
+     * @return int
+     */
+    public static function genInt($min, $max)
+    {
         if (function_exists('random_int')) {
             return random_int($min, $max);
         }
+
         return mt_rand($min, $max);
     }
 
-    public static function gen_byte($len, $bin = false) {
+    /**
+     * @param $len
+     * @param $bin
+     * @return mixed
+     */
+    public static function genByte($len, $bin = false)
+    {
         $byte = null;
         if (function_exists('random_bytes')) {
             $byte = random_bytes($len);
@@ -53,36 +84,54 @@ class Random {
         }
     }
 
-    public static function gen_key($len) {
+    /**
+     * @param $len
+     * @return string
+     */
+    public static function genKey($len)
+    {
         $key = '';
         for ($i = 0; $i < $len; $i++) {
-            $key .= self::$chars[self::gen_int(0, self::$char_len - 1)];
+            $key .= self::$chars[self::genInt(0, self::$charLen - 1)];
         }
+
         return $key;
     }
 
-    public static function gen_str($len) {
+    /**
+     * @param $len
+     * @return string
+     */
+    public static function genStr($len)
+    {
         $key = '';
         for ($i = 0; $i < $len; $i++) {
-            $key .= self::$alphas[self::gen_int(0, self::$alpha_len - 1)];
+            $key .= self::$alphas[self::genInt(0, self::$alphaLen - 1)];
         }
+
         return $key;
     }
 
-    public static function gen_num($len) {
+    /**
+     * @param $len
+     * @return string
+     */
+    public static function genNum($len)
+    {
         $key = '';
         for ($i = 0; $i < $len; $i++) {
-            $key .= self::$digits[self::gen_int(0, self::$digit_len - 1)];
+            $key .= self::$digits[self::genInt(0, self::$digitLen - 1)];
         }
+
         return $key;
     }
 
-    public static function init() {
-        self::$char_len = strlen(self::$chars);
-        self::$alpha_len = strlen(self::$alphas);
-        self::$digit_len = strlen(self::$digits);
+    public static function init()
+    {
+        self::$charLen = strlen(self::$chars);
+        self::$alphaLen = strlen(self::$alphas);
+        self::$digitLen = strlen(self::$digits);
     }
-
 }
 
 Random::init();

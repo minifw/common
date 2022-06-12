@@ -6,21 +6,21 @@ require __DIR__ . '/../../vendor/autoload.php';
 
 use Minifw\Common\FileUtils;
 
-var_dump(FileUtils::path_join('123'));
+var_dump(FileUtils::pathJoin('123'));
 
-var_dump(FileUtils::path_join('123', '456'));
+var_dump(FileUtils::pathJoin('123', '456'));
 
-var_dump(FileUtils::path_join('1/2/3', '../../5'));
+var_dump(FileUtils::pathJoin('1/2/3', '../../5'));
 
-var_dump(FileUtils::path_join('1/2/3', '../../5', '/tmp/123'));
+var_dump(FileUtils::pathJoin('1/2/3', '../../5', '/tmp/123'));
 
-var_dump(FileUtils::path_join('1/2/3', '../../5', '/', '123'));
+var_dump(FileUtils::pathJoin('1/2/3', '../../5', '/', '123'));
 
-var_dump(FileUtils::path_join('1/2/3', '../../5', 'd:/tmp/123'));
+var_dump(FileUtils::pathJoin('1/2/3', '../../5', 'd:/tmp/123'));
 
-var_dump(FileUtils::path_join('1/2/3', '../../5', 'd:', '123'));
+var_dump(FileUtils::pathJoin('1/2/3', '../../5', 'd:', '123'));
 
-var_dump(FileUtils::path_join('1/2/3', '../../../123'));
+var_dump(FileUtils::pathJoin('1/2/3', '../../../123'));
 ?>
 --EXPECTF--
 string(3) "123"

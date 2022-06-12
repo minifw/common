@@ -23,13 +23,7 @@ use Minifw\Common\Exception;
 
 class FileUtils {
 
-    public static $mime_hash = [
-        'css' => 'text/css',
-        'html' => 'text/html',
-        'js' => 'text/javascript',
-    ];
-
-    public static function path_join(...$args) {
+    public static function pathJoin(...$args) {
         $args = array_reverse($args);
 
         $cur_path = [];
@@ -100,7 +94,7 @@ class FileUtils {
         return substr($file, 0, $pos);
     }
 
-    public static function appent_tail($path, $tail) {
+    public static function appentTail($path, $tail) {
         if ($path == '') {
             return '';
         }
@@ -138,7 +132,7 @@ class FileUtils {
         return $name;
     }
 
-    public static function get_upload_name($file, $ext = false) {
+    public static function getUploadName($file, $ext = false) {
         $name = trim($file['name']);
         $name = str_replace(' ', '', $name);
         $name = str_replace('　', '', $name);
@@ -154,7 +148,7 @@ class FileUtils {
 
     //////////////////////////////////////////////////
 
-    public static function upload_file($file, $base_dir, $maxsize = 0, $allow = []) {
+    public static function uploadFile($file, $base_dir, $maxsize = 0, $allow = []) {
         if (empty($file)) {
             return '';
         }
@@ -198,9 +192,9 @@ class FileUtils {
         $dest = $base_dir . '/' . $name;
 
         $file = new File($dest);
-        $file->get_parent()->mkdir();
+        $file->getParent()->mkdir();
 
-        if (move_uploaded_file($file['tmp_name'], $file->get_fs_path())) {
+        if (move_uploaded_file($file['tmp_name'], $file->getFsPath())) {
             return $name;
         }
         else {
@@ -208,7 +202,7 @@ class FileUtils {
         }
     }
 
-    public static function save_file($data, $base_dir, $ext) {
+    public static function saveFile($data, $base_dir, $ext) {
         $name = self::mkname($base_dir, '.' . $ext);
 
         if ($name == '') {
@@ -217,7 +211,7 @@ class FileUtils {
         $dest = $base_dir . '/' . $name;
 
         $file = new File($dest);
-        if ($file->put_content($data)) {
+        if ($file->putContent($data)) {
             return $name;
         }
         else {
@@ -225,7 +219,7 @@ class FileUtils {
         }
     }
 
-    public static function init_file($oname, $filesize, $base_dir, $maxsize = 0, $allow = []) {
+    public static function initFile($oname, $filesize, $base_dir, $maxsize = 0, $allow = []) {
         if ($maxsize > 0 && $filesize > $maxsize) {
             throw new Exception('文件大小超过限制');
         }
@@ -244,8 +238,8 @@ class FileUtils {
         $dest = $base_dir . '/' . $name;
 
         $file = new File($dest);
-        $file->get_parent()->mkdir();
-        $file->init_file($filesize);
+        $file->getParent()->mkdir();
+        $file->initFile($filesize);
     }
 
 }

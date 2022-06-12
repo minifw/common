@@ -19,12 +19,12 @@
 
 namespace Minifw\Common;
 
-use Minifw\Common\Image;
 use Minifw\Common\Exception;
 use Minifw\Common\FileUtils;
+use Minifw\Common\Image;
 
-class ImageUtils {
-
+class ImageUtils
+{
     const CUT_TOP_LEFT = 1;
     const CUT_TOP_RIGHT = 2;
     const CUT_BTM_LEFT = 3;
@@ -35,9 +35,10 @@ class ImageUtils {
      *
      * @param string $full
      * @param int $format
-     * @return \Minifw\Common\Image
+     * @return \GdImage
      */
-    public static function load_image_obj($full, $format) {
+    public static function loadImageObj($full, $format)
+    {
         switch ($format) {
             case Image::FORMAT_GIF:
                 $image_obj = imagecreatefromgif($full);
@@ -51,10 +52,16 @@ class ImageUtils {
                 imagesavealpha($image_obj, true);
                 break;
         }
+
         return $image_obj;
     }
 
-    public static function get_image_info($full) {
+    /**
+     * @param $full
+     * @return mixed
+     */
+    public static function getImageInfo($full)
+    {
         if (!file_exists($full)) {
             throw new Exception('文件不存在');
         }
@@ -63,7 +70,7 @@ class ImageUtils {
         $hash = [
             1 => Image::FORMAT_GIF,
             2 => Image::FORMAT_JPG,
-            3 => Image::FORMAT_PNG,
+            3 => Image::FORMAT_PNG
         ];
 
         if (!isset($hash[$info[2]])) {
@@ -73,8 +80,9 @@ class ImageUtils {
         $ret = [
             'width' => $info[0],
             'height' => $info[1],
-            'format' => $hash[$info[2]],
+            'format' => $hash[$info[2]]
         ];
+
         return $ret;
     }
 
@@ -84,10 +92,11 @@ class ImageUtils {
      * @param int $width
      * @param int $height
      * @param int $bgcolor
-     * @return \Minifw\Common\Image
+     * @return \GdImage
      * @throws Exception
      */
-    public static function get_new_image($format, $width, $height, $bgcolor = null) {
+    public static function getNewImage($format, $width, $height, $bgcolor = null)
+    {
         switch ($format) {
             case Image::FORMAT_GIF:
                 $image_obj = imagecreate($width, $height);
@@ -112,30 +121,34 @@ class ImageUtils {
                 }
                 imagefill($image_obj, 0, 0, $bgcolor);
                 break;
-            default :
+            default:
                 throw new Exception('不支持的图片格式');
         }
+
         return $image_obj;
     }
 
-    public static function calc_dst_size($width, $height, $max_width, $max_height) {
+    /**
+     * @param $width
+     * @param $height
+     * @param $max_width
+     * @param $max_height
+     */
+    public static function calcDstSize($width, $height, $max_width, $max_height)
+    {
         if ($max_width <= 0 && $max_height <= 0) {
             return [$width, $height];
-        }
-        elseif ($max_width <= 0) {
+        } elseif ($max_width <= 0) {
             $width = intval($max_height * $width / $height);
             $height = $max_height;
-        }
-        elseif ($max_height <= 0) {
+        } elseif ($max_height <= 0) {
             $height = intval($max_width * $height / $width);
             $width = $max_width;
-        }
-        else {
+        } else {
             if ($width * $max_height >= $height * $max_width) {
                 $height = intval($max_width * $height / $width);
                 $width = $max_width;
-            }
-            else {
+            } else {
                 $width = intval($max_height * $width / $height);
                 $height = $max_height;
             }
@@ -144,35 +157,49 @@ class ImageUtils {
         return [$width, $height];
     }
 
-    public static function calc_src_size($width, $height, $max_width, $max_height) {
+    /**
+     * @param $width
+     * @param $height
+     * @param $max_width
+     * @param $max_height
+     */
+    public static function calcSrcSize($width, $height, $max_width, $max_height)
+    {
         if ($max_width <= 0 || $max_height <= 0) {
             return [$width, $height];
         }
         if ($width * $max_height <= $height * $max_width) {
             $height = intval($max_height * $width / $max_width);
-        }
-        else {
+        } else {
             $width = intval($max_width * $height / $max_height);
         }
+
         return [$width, $height];
     }
 
-    public static function image_scale($src, $tail = '', $max_width = 0, $max_height = 0) {
-        $dest = FileUtils::appent_tail($src, $tail);
+    /**
+     * @param $src
+     * @param $tail
+     * @param $max_width
+     * @param $max_height
+     * @return mixed
+     */
+    public static function imageScale($src, $tail = '', $max_width = 0, $max_height = 0)
+    {
+        $dest = FileUtils::appentTail($src, $tail);
 
         if (!file_exists($dest)) {
             try {
-                $info = self::get_image_info($src);
+                $info = self::getImageInfo($src);
 
-                list($dst_w, $dst_h) = self::calc_dst_size($info['width'], $info['height'], $max_width, $max_height);
+                list($dst_w, $dst_h) = self::calcDstSize($info['width'], $info['height'], $max_width, $max_height);
 
                 $obj = new Image();
-                $obj->load_image($src)
-                        ->transform($dst_w, $dst_h, NULL, 0, 0, 0, 0, $dst_w, $dst_h, $info['width'], $info['height'])
-                        ->save($dest)
-                        ->destroy();
-            }
-            catch (\Exception $ex) {
+                $obj->loadImage($src)
+                    ->transform($dst_w, $dst_h, null, 0, 0, 0, 0, $dst_w, $dst_h, $info['width'], $info['height'])
+                    ->save($dest)
+                    ->destroy();
+            } catch (\Exception $ex) {
                 copy($src, $dest);
             }
         }
@@ -180,36 +207,42 @@ class ImageUtils {
         return $dest;
     }
 
-    public static function image_scale_padding($src, $tail, $max_width, $max_height, $bgcolor = null) {
-        $dest = FileUtils::appent_tail($src, $tail);
+    /**
+     * @param $src
+     * @param $tail
+     * @param $max_width
+     * @param $max_height
+     * @param $bgcolor
+     * @return mixed
+     */
+    public static function imageScalePadding($src, $tail, $max_width, $max_height, $bgcolor = null)
+    {
+        $dest = FileUtils::appentTail($src, $tail);
 
         if (!file_exists($dest)) {
             try {
-                $info = self::get_image_info($src);
+                $info = self::getImageInfo($src);
 
-                list($dst_w, $dst_h) = self::calc_dst_size($info['width'], $info['height'], $max_width, $max_height);
+                list($dst_w, $dst_h) = self::calcDstSize($info['width'], $info['height'], $max_width, $max_height);
 
                 if ($dst_w < $max_width) {
                     $dst_x = intval(($max_width - $dst_w) / 2);
-                }
-                else {
+                } else {
                     $dst_x = 0;
                 }
 
                 if ($dst_h < $max_height) {
                     $dst_y = intval(($max_height - $dst_h) / 2);
-                }
-                else {
+                } else {
                     $dst_y = 0;
                 }
 
                 $obj = new Image();
-                $obj->load_image($src)
-                        ->transform($max_width, $max_height, $bgcolor, $dst_x, $dst_y, 0, 0, $dst_w, $dst_h, $info['width'], $info['height'])
-                        ->save($dest)
-                        ->destroy();
-            }
-            catch (\Exception $ex) {
+                $obj->loadImage($src)
+                    ->transform($max_width, $max_height, $bgcolor, $dst_x, $dst_y, 0, 0, $dst_w, $dst_h, $info['width'], $info['height'])
+                    ->save($dest)
+                    ->destroy();
+            } catch (\Exception $ex) {
                 copy($src, $dest);
             }
         }
@@ -217,14 +250,23 @@ class ImageUtils {
         return $dest;
     }
 
-    public static function image_scale_cut($src, $tail, $max_width, $max_height, $cut = self::CUT_CENTER) {
-        $dest = FileUtils::appent_tail($src, $tail);
+    /**
+     * @param $src
+     * @param $tail
+     * @param $max_width
+     * @param $max_height
+     * @param $cut
+     * @return mixed
+     */
+    public static function imageScaleCut($src, $tail, $max_width, $max_height, $cut = self::CUT_CENTER)
+    {
+        $dest = FileUtils::appentTail($src, $tail);
 
         if (!file_exists($dest)) {
             try {
-                $info = self::get_image_info($src);
+                $info = self::getImageInfo($src);
 
-                list($src_w, $src_h) = self::calc_src_size($info['width'], $info['height'], $max_width, $max_height, false);
+                list($src_w, $src_h) = self::calcSrcSize($info['width'], $info['height'], $max_width, $max_height, false);
 
                 switch ($cut) {
                     case self::CUT_TOP_LEFT:
@@ -250,12 +292,11 @@ class ImageUtils {
                 }
 
                 $obj = new Image();
-                $obj->load_image($src)
-                        ->transform($max_width, $max_height, NULL, 0, 0, $src_x, $src_y, $max_width, $max_height, $src_w, $src_h)
-                        ->save($dest)
-                        ->destroy();
-            }
-            catch (\Exception $ex) {
+                $obj->loadImage($src)
+                    ->transform($max_width, $max_height, null, 0, 0, $src_x, $src_y, $max_width, $max_height, $src_w, $src_h)
+                    ->save($dest)
+                    ->destroy();
+            } catch (\Exception $ex) {
                 copy($src, $dest);
             }
         }
@@ -263,23 +304,30 @@ class ImageUtils {
         return $dest;
     }
 
-    public static function image_round_corner($src, $tail, $r, $level = 2, $bgcolor = null) {
-        $dest = FileUtils::appent_tail($src, $tail);
+    /**
+     * @param $src
+     * @param $tail
+     * @param $r
+     * @param $level
+     * @param $bgcolor
+     * @return mixed
+     */
+    public static function imageRoundCorner($src, $tail, $r, $level = 2, $bgcolor = null)
+    {
+        $dest = FileUtils::appentTail($src, $tail);
 
         if (!file_exists($dest)) {
             try {
                 $obj = new Image();
-                $obj->load_image($src)
-                        ->round_corner($r, $level, $bgcolor)
-                        ->save($dest)
-                        ->destroy();
-            }
-            catch (\Exception $ex) {
+                $obj->loadImage($src)
+                    ->roundCorner($r, $level, $bgcolor)
+                    ->save($dest)
+                    ->destroy();
+            } catch (\Exception $ex) {
                 copy($src, $dest);
             }
         }
 
         return $dest;
     }
-
 }
