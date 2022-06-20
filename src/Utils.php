@@ -187,10 +187,12 @@ class Utils
             $size = bcdiv($size, 1024, 2);
         }
 
-        if ($size >= 100) {
-            $size = bcdiv($size, 1, 0);
-        } elseif ($size >= 10) {
-            $size = bcdiv($size, 1, 1);
+        if ($cur_unit != 0) {
+            if ($size >= 100) {
+                $size = bcdiv($size, 1, 0);
+            } elseif ($size >= 10) {
+                $size = bcdiv($size, 1, 1);
+            }
         }
 
         return $size . $unit[$cur_unit];

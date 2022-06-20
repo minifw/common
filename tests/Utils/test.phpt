@@ -40,6 +40,8 @@ echo Utils::showDuration(30) . PHP_EOL;
 echo Utils::showDuration(90) . PHP_EOL;
 echo Utils::showDuration(3600) . PHP_EOL;
 echo Utils::showDuration(3661) . PHP_EOL;
+echo Utils::showSize(2) . PHP_EOL;
+echo Utils::showSize(23) . PHP_EOL;
 echo Utils::showSize(500) . PHP_EOL;
 echo Utils::showSize(1024) . PHP_EOL;
 echo Utils::showSize(10240) . PHP_EOL;
@@ -72,6 +74,8 @@ bool(false)
 00:01:30
 01:00:00
 01:01:01
+2
+23
 500
 1.00 K
 10.0 K
