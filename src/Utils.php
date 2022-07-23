@@ -22,78 +22,55 @@ namespace Minifw\Common;
 class Utils
 {
     /**
-     * 清除所有的html标记
-     *
-     * @param string $str 要处理的数据
-     * @return string 处理后的数据
+     * 清除所有的html标记.
      */
-    public static function stripTags($str)
+    public static function stripTags(string $str) : string
     {
-        return preg_replace('/\<(\/?[a-zA-Z0-9]+)(\s+[^>]*)?\/?\>/i', '', $str);
+        return preg_replace('/\\<(\\/?[a-zA-Z0-9]+)(\\s+[^>]*)?\\/?\\>/i', '', $str);
     }
 
     /**
-     * 判断字符串中是否具有html标记
-     *
-     * @param string $str 要判断的字符串
-     * @return bool 具有标记返回true，否则返回fasle
+     * 判断字符串中是否具有html标记.
      */
-    public static function isRich($str)
+    public static function isRich(string $str) : bool
     {
-        return boolval(preg_match('/\<(\/?[a-zA-Z0-9]+)(\s+[^>]*)?\/?\>/i', $str));
+        return boolval(preg_match('/\\<(\\/?[a-zA-Z0-9]+)(\\s+[^>]*)?\\/?\\>/i', $str));
     }
 
     /**
-     * 清除标记后截取指定长度的字符串
-     *
-     * @param string $str 要截取的字符串
-     * @param int $len 要截取的长度
-     * @return string 截取的结果
+     * 清除标记后截取指定长度的字符串.
      */
-    public static function subText($str, $begin, $len, $encoding = 'utf-8')
+    public static function subText(string $str, int $begin, int $len, string $encoding = 'utf-8') : string
     {
         $str = self::stripTags($str);
-        $str = preg_replace('/(\s|&nbsp;)+/i', ' ', $str);
+        $str = preg_replace('/(\\s|&nbsp;)+/i', ' ', $str);
 
         return mb_substr($str, $begin, $len, $encoding);
     }
 
     /**
-     * 截取指定长度的具有基本格式的字符串
-     *
-     * @param string $str 要截取的字符串
-     * @param int $len 要截取的长度
-     * @return string 截取的结果
+     * 截取指定长度的具有基本格式的字符串.
      */
-    public static function subRich($str, $begin, $len, $encoding = 'utf-8')
+    public static function subRich(string $str, int $begin, int $len, string $encoding = 'utf-8') : string
     {
         if (self::isRich($str)) {
-            $str = preg_replace('/\r/i', '', preg_replace('/\n/i', '', $str));
-            $str = preg_replace('/\<br[^>]*\>/i', "\n", preg_replace('/\<p[^>]*\>/i', "\n", $str));
+            $str = preg_replace('/\\r/i', '', preg_replace('/\\n/i', '', $str));
+            $str = preg_replace('/\\<br[^>]*\\>/i', "\n", preg_replace('/\\<p[^>]*\\>/i', "\n", $str));
             $str = self::stripTags($str);
         }
-        $str = preg_replace('/^\s*\n/im', '', preg_replace('/(\t| |　|&nbsp;)+/i', ' ', $str));
+        $str = preg_replace('/^\\s*\\n/im', '', preg_replace('/(\\t| |　|&nbsp;)+/i', ' ', $str));
         $str = mb_substr($str, $begin, $len, $encoding);
-        $str = preg_replace('/^([^\r\n]*)\r?\n?$/im', "<p>$1</p>", $str);
+        $str = preg_replace('/^([^\\r\\n]*)\\r?\\n?$/im', '<p>$1</p>', $str);
 
         return $str;
     }
 
-    /**
-     * 计算字符串长度
-     *
-     * @param string $str 字符串
-     * @return int 长度
-     */
-    public static function strLen($str, $encoding = 'utf-8')
+    public static function strLen(string $str, string $encoding = 'utf-8') : int
     {
         return mb_strlen($str, $encoding);
     }
 
-    /**
-     * @param $str
-     */
-    public static function isEmail($str)
+    public static function isEmail(string $str) : bool
     {
         if (!filter_var($str, FILTER_VALIDATE_EMAIL)) {
             return false;
@@ -102,12 +79,36 @@ class Utils
         return true;
     }
 
-    /**
-     * @param $str
-     */
-    public static function isPhone($str)
+    public static function isPhone(string $str) : bool
     {
-        if (!preg_match("/^1\d{10}$/", $str)) {
+        if (!preg_match('/^1\\d{10}$/', $str)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isTel(string $str) : bool
+    {
+        if (!preg_match('/^\\d{3,4}-\\d{7,8}(-\\d{1,6})?$/', $str)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isNum(string $str) : bool
+    {
+        if (!preg_match('/^-?\\d+(\\.\\d+)?$/', $str)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isPositive(string $str) : bool
+    {
+        if (!preg_match('/^\\d+(\\.\\d+)?$/', $str)) {
             return false;
         }
 
@@ -115,46 +116,9 @@ class Utils
     }
 
     /**
-     * @param $str
+     * 按照 时:分:秒 的格式显示传入的秒数.
      */
-    public static function isTel($str)
-    {
-        if (!preg_match("/^\d{3,4}-\d{7,8}(-\d{1,6})?$/", $str)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * @param $str
-     */
-    public static function isNum($str)
-    {
-        if (!preg_match("/^-?\d+(\.\d+)?$/", $str)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * @param $str
-     */
-    public static function isPositive($str)
-    {
-        if (!preg_match("/^\d+(\.\d+)?$/", $str)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * @param $duration
-     * @return string
-     */
-    public static function showDuration($duration)
+    public static function showDuration(int $duration) : string
     {
         $hour = intval($duration / 3600);
         if ($hour < 10) {
@@ -174,10 +138,9 @@ class Utils
     }
 
     /**
-     * @param $size
-     * @return string
+     * 将传入的文件尺寸显示成合适的计量单位.
      */
-    public static function showSize($size)
+    public static function showSize(int $size) : string
     {
         $unit = ['', ' K', ' M', ' G', ' T', ' P', ' E', ' Z', ' Y'];
         $cur_unit = 0;

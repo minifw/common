@@ -97,5 +97,5 @@ string(19) "测试文件内容2"
 测试文件内容2
 
 [{"name":"dir","dir":true},{"name":"test","dir":false},{"name":"测试","dir":false}]
-false
-false
+null
+null

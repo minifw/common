@@ -21,37 +21,14 @@ namespace Minifw\Common;
 
 class Random
 {
-    /**
-     * @var string
-     */
-    public static $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_[]{}<>~`+=,.;:/?|';
-    /**
-     * @var string
-     */
-    public static $alphas = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    /**
-     * @var string
-     */
-    public static $digits = '0123456789';
-    /**
-     * @var mixed
-     */
-    protected static $charLen;
-    /**
-     * @var mixed
-     */
-    protected static $alphaLen;
-    /**
-     * @var mixed
-     */
-    protected static $digitLen;
+    public static string $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_[]{}<>~`+=,.;:/?|';
+    public static string $alphas = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    public static string $digits = '0123456789';
+    protected static int $charLen;
+    protected static int $alphaLen;
+    protected static int $digitLen;
 
-    /**
-     * @param $min
-     * @param $max
-     * @return int
-     */
-    public static function genInt($min, $max)
+    public static function genInt(int $min, int $max) : int
     {
         if (function_exists('random_int')) {
             return random_int($min, $max);
@@ -60,21 +37,12 @@ class Random
         return mt_rand($min, $max);
     }
 
-    /**
-     * @param $len
-     * @param $bin
-     * @return mixed
-     */
-    public static function genByte($len, $bin = false)
+    public static function genByte(int $len, bool $bin = false) : string
     {
         $byte = null;
         if (function_exists('random_bytes')) {
             $byte = random_bytes($len);
-        }
-        if (function_exists('mcrypt_create_iv')) {
-            $byte = mcrypt_create_iv($len, MCRYPT_DEV_URANDOM);
-        }
-        if (function_exists('openssl_random_pseudo_bytes')) {
+        } elseif (function_exists('openssl_random_pseudo_bytes')) {
             $byte = openssl_random_pseudo_bytes($len);
         }
         if ($bin) {
@@ -84,11 +52,7 @@ class Random
         }
     }
 
-    /**
-     * @param $len
-     * @return string
-     */
-    public static function genKey($len)
+    public static function genKey(int $len) : string
     {
         $key = '';
         for ($i = 0; $i < $len; $i++) {
@@ -98,11 +62,7 @@ class Random
         return $key;
     }
 
-    /**
-     * @param $len
-     * @return string
-     */
-    public static function genStr($len)
+    public static function genStr(int $len) : string
     {
         $key = '';
         for ($i = 0; $i < $len; $i++) {
@@ -112,11 +72,7 @@ class Random
         return $key;
     }
 
-    /**
-     * @param $len
-     * @return string
-     */
-    public static function genNum($len)
+    public static function genNum(int $len) : string
     {
         $key = '';
         for ($i = 0; $i < $len; $i++) {
@@ -126,7 +82,7 @@ class Random
         return $key;
     }
 
-    public static function init()
+    public static function init() : void
     {
         self::$charLen = strlen(self::$chars);
         self::$alphaLen = strlen(self::$alphas);

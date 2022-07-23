@@ -19,49 +19,23 @@
 
 namespace Minifw\Common;
 
-use Minifw\Common\Exception;
-use Minifw\Common\ImageUtils;
-
 class Image
 {
     const FORMAT_GIF = 1;
     const FORMAT_JPG = 2;
     const FORMAT_PNG = 3;
-
-    /**
-     * @var int
-     */
-    public static $default_quality = 90;
-    /**
-     * @var int
-     */
-    public static $default_level = 2;
-    /**
-     * @var \GdImage
-     */
+    public static int $defaultQuality = 90;
+    public static int $defaultLevel = 2;
     protected $imageObj = null;
-    /**
-     * @var int
-     */
-    protected $width = 0;
-    /**
-     * @var int
-     */
-    protected $height = 0;
-    /**
-     * @var int
-     */
-    protected $format = 0;
+    protected int $width = 0;
+    protected int $height = 0;
+    protected int $format = 0;
 
     public function __construct()
     {
     }
 
-    /**
-     * @param $full
-     * @return mixed
-     */
-    public function loadImage($full)
+    public function loadImage(string $full) : self
     {
         $this->destroy();
 
@@ -75,14 +49,7 @@ class Image
         return $this;
     }
 
-    /**
-     * @param $format
-     * @param $width
-     * @param $height
-     * @param $bgcolor
-     * @return mixed
-     */
-    public function initImage($format, $width, $height, $bgcolor = null)
+    public function initImage(int $format, int $width, int $height, $bgcolor = null) : self
     {
         $this->destroy();
         $this->imageObj = ImageUtils::getNewImage($format, $width, $height, $bgcolor);
@@ -93,11 +60,7 @@ class Image
         return $this;
     }
 
-    /**
-     * @param $degree
-     * @return mixed
-     */
-    public function rotate($degree)
+    public function rotate(int $degree) : self
     {
         if ($degree % 90 !== 0) {
             throw new Exception('不支持该操作');
@@ -119,65 +82,33 @@ class Image
         return $this;
     }
 
-    /**
-     * @param $full
-     * @param $dst_x
-     * @param $dst_y
-     * @param $src_x
-     * @param $src_y
-     * @param $dst_w
-     * @param $dst_h
-     * @param $src_w
-     * @param $src_h
-     * @return mixed
-     */
-    public function merge($full, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h)
+    public function merge(string $srcFull, int $dstX, int $dstY, int $srcX, int $srcY, int $dstW, int $dstH, int $srcW, int $srcH) : self
     {
-        $info = ImageUtils::getImageInfo($full);
-        $src_obj = ImageUtils::loadImageObj($full, $info['format']);
-        imagecopyresampled($this->imageObj, $src_obj, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h);
-        imagedestroy($src_obj);
+        $info = ImageUtils::getImageInfo($srcFull);
+        $srcObj = ImageUtils::loadImageObj($srcFull, $info['format']);
+        imagecopyresampled($this->imageObj, $srcObj, $dstX, $dstY, $srcX, $srcY, $dstW, $dstH, $srcW, $srcH);
+        imagedestroy($srcObj);
 
         return $this;
     }
 
-    /**
-     * @param $new_w
-     * @param $new_h
-     * @param $bgcolor
-     * @param $dst_x
-     * @param $dst_y
-     * @param $src_x
-     * @param $src_y
-     * @param $dst_w
-     * @param $dst_h
-     * @param $src_w
-     * @param $src_h
-     * @return mixed
-     */
-    public function transform($new_w, $new_h, $bgcolor, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h)
+    public function transform(int $newW, int $newH, $bgColor, int $dstX, int $dstY, int $srcX, int $srcY, int $dstW, int $dstH, int $srcW, int $srcH) : self
     {
-        $src_obj = $this->imageObj;
-        $this->imageObj = ImageUtils::getNewImage($this->format, $new_w, $new_h, $bgcolor);
-        $this->width = $new_w;
-        $this->height = $new_h;
+        $srcObj = $this->imageObj;
+        $this->imageObj = ImageUtils::getNewImage($this->format, $newW, $newH, $bgColor);
+        $this->width = $newW;
+        $this->height = $newH;
 
-        imagecopyresampled($this->imageObj, $src_obj, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h);
-        imagedestroy($src_obj);
+        imagecopyresampled($this->imageObj, $srcObj, $dstX, $dstY, $srcX, $srcY, $dstW, $dstH, $srcW, $srcH);
+        imagedestroy($srcObj);
 
         return $this;
     }
 
-    /**
-     * @param $r
-     * @param $level
-     * @param $bgcolor
-     * @return mixed
-     */
-    public function roundCorner($r, $level = -1, $bgcolor = null)
+    public function roundCorner(int $r, int $level = -1, $bgColor = null) : self
     {
         if ($level < 0) {
-            $level = self::$default_level;
+            $level = self::$defaultLevel;
         }
         if ($r <= 0) {
             return $this;
@@ -196,41 +127,29 @@ class Image
             $level = 0; //gif图片不支持抗锯齿
         }
 
-        if ($bgcolor == null) {
+        if ($bgColor == null) {
             switch ($this->format) {
                 case self::FORMAT_GIF:
-                    $bgcolor = imagecolortransparent($this->imageObj);
+                    $bgColor = imagecolortransparent($this->imageObj);
                     break;
                 case self::FORMAT_JPG:
-                    $bgcolor = imagecolorallocate($this->imageObj, 255, 255, 255);
+                    $bgColor = imagecolorallocate($this->imageObj, 255, 255, 255);
                     break;
                 case self::FORMAT_PNG:
-                    $bgcolor = imagecolorallocatealpha($this->imageObj, 0, 0, 0, 127);
+                    $bgColor = imagecolorallocatealpha($this->imageObj, 0, 0, 0, 127);
                     break;
             }
         }
 
-        $this->roundOneCorner($r, $r, $r, 0, 0, $w, $h, $level, $bgcolor);
-        $this->roundOneCorner($r, $this->width - $r, $r, $this->width - $w, 0, $w, $h, $level, $bgcolor);
-        $this->roundOneCorner($r, $r, $this->height - $r, 0, $this->height - $h, $w, $h, $level, $bgcolor);
-        $this->roundOneCorner($r, $this->width - $r, $this->height - $r, $this->width - $w, $this->height - $h, $w, $h, $level, $bgcolor);
+        $this->roundOneCorner($r, $r, $r, 0, 0, $w, $h, $level, $bgColor);
+        $this->roundOneCorner($r, $this->width - $r, $r, $this->width - $w, 0, $w, $h, $level, $bgColor);
+        $this->roundOneCorner($r, $r, $this->height - $r, 0, $this->height - $h, $w, $h, $level, $bgColor);
+        $this->roundOneCorner($r, $this->width - $r, $this->height - $r, $this->width - $w, $this->height - $h, $w, $h, $level, $bgColor);
 
         return $this;
     }
 
-    /**
-     * @param $r
-     * @param $cx
-     * @param $cy
-     * @param $x
-     * @param $y
-     * @param $w
-     * @param $h
-     * @param $level
-     * @param $bgcolor
-     * @return mixed
-     */
-    public function roundOneCorner($r, $cx, $cy, $x, $y, $w, $h, $level, $bgcolor)
+    public function roundOneCorner(int $r, int $cx, int $cy, int $x, int $y, int $w, int $h, int $level, $bgcolor) : self
     {
         $br = (($bgcolor >> 16) & 0xFF);
         $bg = (($bgcolor >> 8) & 0xFF);
@@ -265,15 +184,10 @@ class Image
         return $this;
     }
 
-    /**
-     * @param $dest
-     * @param $quality
-     * @return mixed
-     */
-    public function save($dest, $quality = -1)
+    public function save(string $dest, int $quality = -1) : self
     {
         if ($quality < 0) {
-            $quality = self::$default_quality;
+            $quality = self::$defaultQuality;
         }
         switch ($this->format) {
             case self::FORMAT_GIF:
@@ -292,10 +206,7 @@ class Image
         return $this;
     }
 
-    /**
-     * @return null
-     */
-    public function destroy()
+    public function destroy() : void
     {
         if ($this->imageObj === null) {
             return;
@@ -307,22 +218,16 @@ class Image
         $this->format = 0;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getFormat()
+    public function getFormat() : int
     {
         return $this->format;
     }
 
-    public function getSize()
+    public function getSize() : array
     {
         return [$this->width, $this->height];
     }
 
-    /**
-     * @return mixed
-     */
     public function getObj()
     {
         return $this->imageObj;
@@ -330,14 +235,7 @@ class Image
 
     //////////////////////////////////////
 
-    /**
-     * @param $r
-     * @param $x
-     * @param $y
-     * @param $level
-     * @return int
-     */
-    public static function calcAlpha($r, $x, $y, $level)
+    public static function calcAlpha(int $r, int $x, int $y, int $level) : int
     {
         $r2 = $r * $r;
         $offset = $x * $x + $y * $y - $r2;

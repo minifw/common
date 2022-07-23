@@ -19,46 +19,31 @@
 
 namespace Minifw\Common;
 
-use Minifw\Common\Exception;
-use Minifw\Common\FileUtils;
-
 class File
 {
-    /**
-     * @var string
-     */
-    public static $defaultFsEncoding = '';
-    /**
-     * @var mixed
-     */
-    protected $fsEncoding;
-    /**
-     * @var string
-     */
-    protected $appEncoding = 'utf-8';
-    /**
-     * @var string
-     */
-    protected $fsPath = '';
-    /**
-     * @var string
-     */
-    protected $appPath = '';
-    /**
-     * @var array
-     */
-    public static $mimeHash = [
+    public static string $defaultFsEncoding = '';
+    protected string $fsEncoding;
+    protected string $appEncoding = 'utf-8';
+    protected string $fsPath = '';
+    protected string $appPath = '';
+    public static array $mimeHash = [
         'css' => 'text/css',
         'html' => 'text/html',
         'js' => 'text/javascript'
     ];
 
-    /**
-     * @param $appPath
-     * @param $fsPath
-     * @param null $fsEncoding
-     */
-    public function __construct($appPath, $fsPath = null, $fsEncoding = null)
+    public function toFile($appPath, ?string $fsEncoding = null) : self
+    {
+        if (is_string($appPath)) {
+            return new self($appPath, null, $fsEncoding);
+        } elseif (!($appPath instanceof self)) {
+            throw new Exception('参数不合法');
+        }
+
+        return $appPath;
+    }
+
+    public function __construct(?string $appPath, ?string $fsPath = null, ?string $fsEncoding = null)
     {
         if (empty($fsEncoding)) {
             $this->fsEncoding = self::$defaultFsEncoding;
@@ -75,26 +60,17 @@ class File
         }
     }
 
-    /**
-     * @return mixed
-     */
-    public function getFsPath()
+    public function getFsPath() : string
     {
         return $this->fsPath;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getAppPath()
+    public function getAppPath() : string
     {
         return $this->appPath;
     }
 
-    /**
-     * @param $path
-     */
-    public function setAppPath($path)
+    public function setAppPath(string $path) : void
     {
         $path = rtrim($path, '/\\');
 
@@ -106,10 +82,7 @@ class File
         }
     }
 
-    /**
-     * @param $path
-     */
-    public function setFsPath($path)
+    public function setFsPath(string $path) : void
     {
         $path = rtrim($path, '/\\');
 
@@ -121,7 +94,7 @@ class File
         }
     }
 
-    public function getContent()
+    public function getContent() : string
     {
         if (file_exists($this->fsPath)) {
             return file_get_contents($this->fsPath);
@@ -130,26 +103,19 @@ class File
         return '';
     }
 
-    /**
-     * @param $function
-     */
-    public function call($function)
+    public function call(callable $function)
     {
         return call_user_func($function, $this->fsPath);
     }
 
-    /**
-     *
-     * @return \Minifw\Common\File
-     */
-    public function getParent()
+    public function getParent() : self
     {
         $parent = FileUtils::dirname($this->appPath);
 
         return new File($parent, '', $this->fsEncoding);
     }
 
-    public function isDirEmpty()
+    public function isDirEmpty() : bool
     {
         if (is_dir($this->fsPath)) {
             $dir = opendir($this->fsPath);
@@ -170,12 +136,7 @@ class File
         }
     }
 
-    /**
-     * @param $ext
-     * @param $hidden
-     * @return mixed
-     */
-    public function ls($ext = '', $hidden = false)
+    public function ls(string $ext = '', bool $hidden = false) : ?array
     {
         if (is_dir($this->fsPath)) {
             $res = [];
@@ -224,14 +185,11 @@ class File
 
             return $res;
         } else {
-            return false;
+            return null;
         }
     }
 
-    /**
-     * @return mixed
-     */
-    public function getMime()
+    public function getMime() : ?string
     {
         if (file_exists($this->fsPath)) {
             $pinfo = pathinfo($this->fsPath);
@@ -250,7 +208,7 @@ class File
         return null;
     }
 
-    public function readfile()
+    public function readfile() : void
     {
         if (!headers_sent()) {
             $mimeType = $this->getMime();
@@ -263,64 +221,47 @@ class File
 
     ///////////////////////////////////////
 
-    public function mkdir()
+    public function mkdir() : void
     {
         if (!file_exists($this->fsPath)) {
-            return \mkdir($this->fsPath, 0777, true);
+            if (!\mkdir($this->fsPath, 0777, true)) {
+                throw new Exception('目录创建失败');
+            }
         } elseif (!is_dir($this->fsPath)) {
             throw new Exception('已存在同名文件');
         }
-
-        return true;
     }
 
-    /**
-     * @param $data
-     * @param $flags
-     */
-    public function putContent($data, $flags = 0)
+    public function putContent($data, int $flags = 0) : void
     {
         $this->getParent()->mkdir();
 
-        return file_put_contents($this->fsPath, $data, $flags);
+        $ret = file_put_contents($this->fsPath, $data, $flags);
+        if ($ret === false) {
+            throw new Exception('文件写入失败');
+        }
     }
 
-    /**
-     *
-     * @param \Minifw\Common\File $dest
-     * @return \Minifw\Common\File 新路径的文件对象
-     */
-    public function copy($dest)
+    public function copy($dest) : self
     {
         if (!file_exists($this->fsPath)) {
-            return false;
+            throw new Exception('文件不存在');
         }
 
-        if (!is_object($dest)) {
-            $dest = new File($dest, null, $this->fsEncoding);
-        }
+        $dest = self::toFile($dest, $this->fsEncoding);
 
         $dest->getParent()->mkdir();
 
-        if (\copy($this->fsPath, $dest->fsPath)) {
-            return $dest;
+        if (!\copy($this->fsPath, $dest->fsPath)) {
+            throw new Exception('文件复制失败');
         }
 
-        return false;
+        return $dest;
     }
 
-    /**
-     *
-     * @param \Minifw\Common\File $dest
-     * @param boolean $hidden
-     * @return \Minifw\Common\File 新路径的文件对象
-     * @throws Exception
-     */
-    public function copyDir($dest, $hidden = false)
+    public function copyDir($dest, bool $hidden = false) : self
     {
-        if (!is_object($dest)) {
-            $dest = new File($dest, null, $this->fsEncoding);
-        }
+        $dest = self::toFile($dest, $this->fsEncoding);
 
         $dest->mkdir();
 
@@ -364,40 +305,34 @@ class File
         return $dest;
     }
 
-    /**
-     *
-     * @param \Minifw\Common\File $dest
-     * @return \Minifw\Common\File 新路径的文件对象
-     */
-    public function rename($dest)
+    public function rename($dest) : self
     {
         if (!file_exists($this->fsPath)) {
-            return false;
+            throw new Exception('文件不存在');
         }
 
-        if (!is_object($dest)) {
-            $dest = new File($dest, null, $this->fsEncoding);
-        }
+        $dest = self::toFile($dest, $this->fsEncoding);
 
         $dest->getParent()->mkdir();
 
-        if (\rename($this->fsPath, $dest->fsPath)) {
-            return $dest;
+        if (!\rename($this->fsPath, $dest->fsPath)) {
+            throw new Exception('文件重命名失败');
         }
 
-        return false;
+        return $dest;
     }
 
-    /**
-     * @param $delete_parent
-     */
-    public function delete($delete_parent = false)
+    public function delete(bool $delete_parent = false) : void
     {
         if (file_exists($this->fsPath)) {
             if (is_dir($this->fsPath)) {
-                rmdir($this->fsPath);
+                if (!rmdir($this->fsPath)) {
+                    throw new Exception('目录删除失败');
+                }
             } else {
-                @unlink($this->fsPath);
+                if (!@unlink($this->fsPath)) {
+                    throw new Exception('文件删除失败');
+                }
             }
 
             if ($delete_parent) {
@@ -408,11 +343,9 @@ class File
                 }
             }
         }
-
-        return true;
     }
 
-    public function deleteWithTail()
+    public function deleteWithTail() : void
     {
         $pinfo = pathinfo($this->fsPath);
         $dir = $pinfo['dirname'] . '/';
@@ -435,18 +368,12 @@ class File
             $file = new File(null, $one, $this->fsEncoding);
             $file->delete();
         }
-
-        return true;
     }
 
-    /**
-     * @param $delete_self
-     * @return null
-     */
-    public function clearDir($delete_self = false)
+    public function clearDir(bool $delete_self = false) : void
     {
         if (!is_dir($this->fsPath)) {
-            return;
+            throw new Exception('目录不存在');
         }
 
         $full = $this->fsPath;
@@ -466,27 +393,30 @@ class File
                     $file = new File(null, $sub, $this->fsEncoding);
                     $file->clearDir(true);
                 } else {
-                    @unlink($sub);
+                    if (!@unlink($sub)) {
+                        throw new Exception('文件删除失败');
+                    }
                 }
             }
             closedir($dh);
         }
 
         if ($delete_self) {
-            rmdir($full);
+            if (!rmdir($full)) {
+                throw new Exception('目录删除失败');
+            }
         }
     }
 
     /////////////////////////////////////////////////////
 
-    /**
-     * @param $filesize
-     */
-    public function initFile($filesize)
+    public function initFile(int $filesize) : void
     {
         $dir = FileUtils::dirname($this->fsPath);
         if (!file_exists($dir)) {
-            \mkdir($dir, 0777, true);
+            if (!\mkdir($dir, 0777, true)) {
+                throw new Exception('文件创建失败');
+            }
         }
 
         $dh = fopen($this->fsPath, 'w+');
@@ -507,12 +437,7 @@ class File
         fclose($dh);
     }
 
-    /**
-     * @param $chunk
-     * @param $total
-     * @param $file
-     */
-    public function writeChunk($chunk, $total, $file)
+    public function writeChunk(int $chunk, int $total, array $file) : void
     {
         $cfgPath = $this->fsPath . '.ucfg';
 
@@ -523,7 +448,7 @@ class File
         $tmp_name = $file['tmp_name'];
         $content = file_get_contents($tmp_name);
         $size = strlen($content);
-        unlink($tmp_name);
+        @unlink($tmp_name);
 
         $dh = fopen($this->fsPath, 'r+');
         if ($chunk == $total - 1) {

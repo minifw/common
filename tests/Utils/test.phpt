@@ -34,8 +34,6 @@ var_dump(Utils::isNum('123a'));
 var_dump(Utils::isPositive('23444'));
 var_dump(Utils::isPositive('-55433a'));
 
-
-
 echo Utils::showDuration(30) . PHP_EOL;
 echo Utils::showDuration(90) . PHP_EOL;
 echo Utils::showDuration(3600) . PHP_EOL;

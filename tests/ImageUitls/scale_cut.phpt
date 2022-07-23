@@ -4,8 +4,8 @@ Utils test
 <?php
 require __DIR__ . '/../../vendor/autoload.php';
 
-use Minifw\Common\ImageUtils;
 use Minifw\Common\FileUtils;
+use Minifw\Common\ImageUtils;
 
 $path = dirname(dirname(__DIR__)) . '/tmp/image';
 

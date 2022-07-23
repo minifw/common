@@ -4,8 +4,8 @@ Utils test
 <?php
 require __DIR__ . '/../../vendor/autoload.php';
 
-use Minifw\Common\ImageUtils;
 use Minifw\Common\FileUtils;
+use Minifw\Common\ImageUtils;
 
 $path = dirname(dirname(__DIR__)) . '/tmp/image';
 
@@ -31,7 +31,6 @@ foreach ($img_list as $img) {
     $new_info = getimagesize($new_path);
     echo json_encode($new_info, JSON_UNESCAPED_UNICODE) . PHP_EOL;
 }
-
 
 $file = new \Minifw\Common\File($path);
 $file->clearDir(true);

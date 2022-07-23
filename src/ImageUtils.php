@@ -19,10 +19,6 @@
 
 namespace Minifw\Common;
 
-use Minifw\Common\Exception;
-use Minifw\Common\FileUtils;
-use Minifw\Common\Image;
-
 class ImageUtils
 {
     const CUT_TOP_LEFT = 1;
@@ -31,36 +27,26 @@ class ImageUtils
     const CUT_BTM_RIGHT = 4;
     const CUT_CENTER = 5;
 
-    /**
-     *
-     * @param string $full
-     * @param int $format
-     * @return \GdImage
-     */
-    public static function loadImageObj($full, $format)
+    public static function loadImageObj(string $full, int $format)
     {
         switch ($format) {
             case Image::FORMAT_GIF:
-                $image_obj = imagecreatefromgif($full);
+                $imageObj = imagecreatefromgif($full);
                 break;
             case Image::FORMAT_JPG:
-                $image_obj = imagecreatefromjpeg($full);
+                $imageObj = imagecreatefromjpeg($full);
                 break;
             case Image::FORMAT_PNG:
-                $image_obj = imagecreatefrompng($full);
-                imagealphablending($image_obj, false);
-                imagesavealpha($image_obj, true);
+                $imageObj = imagecreatefrompng($full);
+                imagealphablending($imageObj, false);
+                imagesavealpha($imageObj, true);
                 break;
         }
 
-        return $image_obj;
+        return $imageObj;
     }
 
-    /**
-     * @param $full
-     * @return mixed
-     */
-    public static function getImageInfo($full)
+    public static function getImageInfo(string $full) : array
     {
         if (!file_exists($full)) {
             throw new Exception('文件不存在');
@@ -86,71 +72,59 @@ class ImageUtils
         return $ret;
     }
 
-    /**
-     *
-     * @param string $format
-     * @param int $width
-     * @param int $height
-     * @param int $bgcolor
-     * @return \GdImage
-     * @throws Exception
-     */
-    public static function getNewImage($format, $width, $height, $bgcolor = null)
+    public static function getNewImage(int $format, int $width, int $height, $bgcolor = null)
     {
         switch ($format) {
             case Image::FORMAT_GIF:
-                $image_obj = imagecreate($width, $height);
+                $imageObj = imagecreate($width, $height);
                 if ($bgcolor == null) {
-                    $bgcolor = imagecolorallocate($image_obj, 0, 0, 0);
+                    $bgcolor = imagecolorallocate($imageObj, 0, 0, 0);
                 }
-                imagecolortransparent($image_obj, $bgcolor);
+                imagecolortransparent($imageObj, $bgcolor);
                 break;
             case Image::FORMAT_JPG:
-                $image_obj = imagecreatetruecolor($width, $height);
+                $imageObj = imagecreatetruecolor($width, $height);
                 if ($bgcolor == null) {
-                    $bgcolor = imagecolorallocate($image_obj, 255, 255, 255);
+                    $bgcolor = imagecolorallocate($imageObj, 255, 255, 255);
                 }
-                imagefill($image_obj, 0, 0, $bgcolor);
+                imagefill($imageObj, 0, 0, $bgcolor);
                 break;
             case Image::FORMAT_PNG:
-                $image_obj = imagecreatetruecolor($width, $height);
-                imagealphablending($image_obj, false);
-                imagesavealpha($image_obj, true);
+                $imageObj = imagecreatetruecolor($width, $height);
+                imagealphablending($imageObj, false);
+                imagesavealpha($imageObj, true);
                 if ($bgcolor == null) {
-                    $bgcolor = imagecolorallocatealpha($image_obj, 0, 0, 0, 127);
+                    $bgcolor = imagecolorallocatealpha($imageObj, 0, 0, 0, 127);
                 }
-                imagefill($image_obj, 0, 0, $bgcolor);
+                imagefill($imageObj, 0, 0, $bgcolor);
                 break;
             default:
                 throw new Exception('不支持的图片格式');
         }
 
-        return $image_obj;
+        return $imageObj;
     }
 
     /**
-     * @param $width
-     * @param $height
-     * @param $max_width
-     * @param $max_height
+     * 将尺寸为width*height的图片等比缩放，并限制在maxWidth*maxHeight之内时的尺寸，当某一max参数为0时会忽略对应的参数.
      */
-    public static function calcDstSize($width, $height, $max_width, $max_height)
+    public static function calcDstSize(int $width, int $height, int $maxWidth, int $maxHeight) : array
     {
-        if ($max_width <= 0 && $max_height <= 0) {
+        if ($maxWidth <= 0 && $maxHeight <= 0) {
             return [$width, $height];
-        } elseif ($max_width <= 0) {
-            $width = intval($max_height * $width / $height);
-            $height = $max_height;
-        } elseif ($max_height <= 0) {
-            $height = intval($max_width * $height / $width);
-            $width = $max_width;
+        } elseif ($maxWidth <= 0) {
+            $width = intval($maxHeight * $width / $height);
+            $height = $maxHeight;
+        } elseif ($maxHeight <= 0) {
+            $height = intval($maxWidth * $height / $width);
+            $width = $maxWidth;
         } else {
-            if ($width * $max_height >= $height * $max_width) {
-                $height = intval($max_width * $height / $width);
-                $width = $max_width;
+            if ($width * $maxHeight >= $height * $maxWidth) {
+                $height = intval($maxWidth * $height / $width);
+                $width = $maxWidth;
             } else {
-                $width = intval($max_height * $width / $height);
-                $height = $max_height;
+                $width = intval($maxHeight * $width / $height);
+                $height = $maxHeight;
             }
         }
 
@@ -158,33 +132,26 @@ class ImageUtils
     }
 
     /**
-     * @param $width
-     * @param $height
-     * @param $max_width
-     * @param $max_height
+     * 将尺寸为width*height的图片等比缩放，并要求 width<=maxWidth||height<=maxHeight 时的尺寸.
      */
-    public static function calcSrcSize($width, $height, $max_width, $max_height)
+    public static function calcSrcSize(int $width, int $height, int $maxWidth, int $maxHeight) : array
     {
-        if ($max_width <= 0 || $max_height <= 0) {
+        if ($maxWidth <= 0 || $maxHeight <= 0) {
             return [$width, $height];
         }
-        if ($width * $max_height <= $height * $max_width) {
-            $height = intval($max_height * $width / $max_width);
+        if ($width * $maxHeight <= $height * $maxWidth) {
+            $height = intval($maxHeight * $width / $maxWidth);
         } else {
-            $width = intval($max_width * $height / $max_height);
+            $width = intval($maxWidth * $height / $maxHeight);
         }
 
         return [$width, $height];
     }
 
     /**
-     * @param $src
-     * @param $tail
-     * @param $max_width
-     * @param $max_height
-     * @return mixed
+     * 生成指定尺寸的缩略图，并给缩略图添加指定后缀
      */
-    public static function imageScale($src, $tail = '', $max_width = 0, $max_height = 0)
+    public static function imageScale(string $src, string $tail = '', int $maxWidth = 0, int $maxHeight = 0) : string
     {
         $dest = FileUtils::appentTail($src, $tail);
 
@@ -192,7 +159,7 @@ class ImageUtils
             try {
                 $info = self::getImageInfo($src);
 
-                list($dst_w, $dst_h) = self::calcDstSize($info['width'], $info['height'], $max_width, $max_height);
+                list($dst_w, $dst_h) = self::calcDstSize($info['width'], $info['height'], $maxWidth, $maxHeight);
 
                 $obj = new Image();
                 $obj->loadImage($src)
@@ -208,14 +175,9 @@ class ImageUtils
     }
 
     /**
-     * @param $src
-     * @param $tail
-     * @param $max_width
-     * @param $max_height
-     * @param $bgcolor
-     * @return mixed
+     * 生成指定尺寸的缩略图，并给缩略图添加指定后缀，不足部分用指定颜色填充.
      */
-    public static function imageScalePadding($src, $tail, $max_width, $max_height, $bgcolor = null)
+    public static function imageScalePadding(string $src, string $tail, int $maxWidth, int $maxHeight, $bgcolor = null) : string
     {
         $dest = FileUtils::appentTail($src, $tail);
 
@@ -223,23 +185,23 @@ class ImageUtils
             try {
                 $info = self::getImageInfo($src);
 
-                list($dst_w, $dst_h) = self::calcDstSize($info['width'], $info['height'], $max_width, $max_height);
+                list($dst_w, $dst_h) = self::calcDstSize($info['width'], $info['height'], $maxWidth, $maxHeight);
 
-                if ($dst_w < $max_width) {
-                    $dst_x = intval(($max_width - $dst_w) / 2);
+                if ($dst_w < $maxWidth) {
+                    $dst_x = intval(($maxWidth - $dst_w) / 2);
                 } else {
                     $dst_x = 0;
                 }
 
-                if ($dst_h < $max_height) {
-                    $dst_y = intval(($max_height - $dst_h) / 2);
+                if ($dst_h < $maxHeight) {
+                    $dst_y = intval(($maxHeight - $dst_h) / 2);
                 } else {
                     $dst_y = 0;
                 }
 
                 $obj = new Image();
                 $obj->loadImage($src)
-                    ->transform($max_width, $max_height, $bgcolor, $dst_x, $dst_y, 0, 0, $dst_w, $dst_h, $info['width'], $info['height'])
+                    ->transform($maxWidth, $maxHeight, $bgcolor, $dst_x, $dst_y, 0, 0, $dst_w, $dst_h, $info['width'], $info['height'])
                     ->save($dest)
                     ->destroy();
             } catch (\Exception $ex) {
@@ -251,14 +213,9 @@ class ImageUtils
     }
 
     /**
-     * @param $src
-     * @param $tail
-     * @param $max_width
-     * @param $max_height
-     * @param $cut
-     * @return mixed
+     * 生成指定尺寸的缩略图，并给缩略图添加指定后缀，多余部分会被切除.
      */
-    public static function imageScaleCut($src, $tail, $max_width, $max_height, $cut = self::CUT_CENTER)
+    public static function imageScaleCut(string $src, string $tail, int $maxWidth, int $maxHeight, int $cut = self::CUT_CENTER) : string
     {
         $dest = FileUtils::appentTail($src, $tail);
 
@@ -266,7 +223,7 @@ class ImageUtils
             try {
                 $info = self::getImageInfo($src);
 
-                list($src_w, $src_h) = self::calcSrcSize($info['width'], $info['height'], $max_width, $max_height, false);
+                list($src_w, $src_h) = self::calcSrcSize($info['width'], $info['height'], $maxWidth, $maxHeight, false);
 
                 switch ($cut) {
                     case self::CUT_TOP_LEFT:
@@ -293,7 +250,7 @@ class ImageUtils
 
                 $obj = new Image();
                 $obj->loadImage($src)
-                    ->transform($max_width, $max_height, null, 0, 0, $src_x, $src_y, $max_width, $max_height, $src_w, $src_h)
+                    ->transform($maxWidth, $maxHeight, null, 0, 0, $src_x, $src_y, $maxWidth, $maxHeight, $src_w, $src_h)
                     ->save($dest)
                     ->destroy();
             } catch (\Exception $ex) {
@@ -305,14 +262,9 @@ class ImageUtils
     }
 
     /**
-     * @param $src
-     * @param $tail
-     * @param $r
-     * @param $level
-     * @param $bgcolor
-     * @return mixed
+     * 给图片添加圆角，并添加指定后缀
      */
-    public static function imageRoundCorner($src, $tail, $r, $level = 2, $bgcolor = null)
+    public static function imageRoundCorner(string $src, string $tail, int $r, int $level = 2, $bgcolor = null) : string
     {
         $dest = FileUtils::appentTail($src, $tail);
 

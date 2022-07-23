@@ -20,13 +20,10 @@
 namespace Minifw\Common;
 
 /**
- * 自定义的异常类，只在本程序内抛出和捕获
+ * 自定义的异常类，只在本程序内抛出和捕获.
  */
 class Exception extends \Exception
 {
-    /**
-     * @var mixed
-     */
     protected $extraMsg;
 
     /**
@@ -36,7 +33,7 @@ class Exception extends \Exception
      * @param \Exception $previous 触发者
      * @param mixed $extraMsg 额外信息
      */
-    public function __construct($message = "", $code = -1, \Exception $previous = null, $extraMsg = null)
+    public function __construct($message = '', int $code = -1, \Exception $previous = null, $extraMsg = null)
     {
         if (is_array($message) || is_object($message)) {
             $message = print_r($message, true);
@@ -46,9 +43,6 @@ class Exception extends \Exception
         $this->extraMsg = $extraMsg;
     }
 
-    /**
-     * @return mixed
-     */
     public function getExtraMsg()
     {
         return $this->extraMsg;

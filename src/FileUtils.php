@@ -19,11 +19,10 @@
 
 namespace Minifw\Common;
 
-use Minifw\Common\Exception;
-
-class FileUtils {
-
-    public static function pathJoin(...$args) {
+class FileUtils
+{
+    public static function pathJoin(string ...$args) : ?string
+    {
         $args = array_reverse($args);
 
         $cur_path = [];
@@ -48,12 +47,10 @@ class FileUtils {
             if ($v == '..') {
                 if (count($parsed) <= 1) {
                     return null;
-                }
-                else {
+                } else {
                     unset($parsed[count($parsed) - 1]);
                 }
-            }
-            else {
+            } else {
                 $parsed[count($parsed)] = $v;
             }
         }
@@ -61,40 +58,47 @@ class FileUtils {
         if (count($parsed) == 1 && $parsed[0] == '') {
             return '/';
         }
+
         return implode('/', $parsed);
     }
 
-    public static function dirname($path) {
+    public static function dirname(string $path) : string
+    {
         $path = \dirname($path);
         if ($path == '.') {
             $path = '';
         }
+
         return $path;
     }
 
-    public static function basename($path) {
+    public static function basename(string $path) : string
+    {
         $pos = strrpos($path, '/');
         if ($pos === false) {
             return $path;
         }
+
         return substr($path, $pos + 1);
     }
 
-    public static function filename($file, $last = true) {
+    public static function filename(string $file, bool $last = true) : string
+    {
         $pos = false;
         if ($last) {
             $pos = strrpos($file, '.');
-        }
-        else {
+        } else {
             $pos = strpos($file, '.');
         }
         if ($pos === false) {
             return $file;
         }
+
         return substr($file, 0, $pos);
     }
 
-    public static function appentTail($path, $tail) {
+    public static function appentTail(string $path, string $tail) : string
+    {
         if ($path == '') {
             return '';
         }
@@ -114,7 +118,8 @@ class FileUtils {
         return $path . '/' . $name . $tail . $ext;
     }
 
-    public static function mkname($base_dir, $tail) {
+    public static function mkname(string $base_dir, string $tail) : string
+    {
         $name = '';
         $count = 0;
         $now = time();
@@ -129,10 +134,12 @@ class FileUtils {
             }
             $count++;
         }
+
         return $name;
     }
 
-    public static function getUploadName($file, $ext = false) {
+    public static function getUploadName(array $file, bool $ext = false) : string
+    {
         $name = trim($file['name']);
         $name = str_replace(' ', '', $name);
         $name = str_replace('　', '', $name);
@@ -143,12 +150,14 @@ class FileUtils {
         if ($pos === false) {
             return $name;
         }
+
         return trim(substr($name, 0, $pos));
     }
 
     //////////////////////////////////////////////////
 
-    public static function uploadFile($file, $base_dir, $maxsize = 0, $allow = []) {
+    public static function uploadFile(array $file, string $base_dir, int $maxsize = 0, array $allow = []) : string
+    {
         if (empty($file)) {
             return '';
         }
@@ -191,18 +200,18 @@ class FileUtils {
         }
         $dest = $base_dir . '/' . $name;
 
-        $file = new File($dest);
-        $file->getParent()->mkdir();
+        $fileObj = new File($dest);
+        $fileObj->getParent()->mkdir();
 
-        if (move_uploaded_file($file['tmp_name'], $file->getFsPath())) {
+        if (move_uploaded_file($file['tmp_name'], $fileObj->getFsPath())) {
             return $name;
-        }
-        else {
+        } else {
             throw new Exception('文件移动出错');
         }
     }
 
-    public static function saveFile($data, $base_dir, $ext) {
+    public static function saveFile($data, string $base_dir, string $ext) : string
+    {
         $name = self::mkname($base_dir, '.' . $ext);
 
         if ($name == '') {
@@ -213,13 +222,13 @@ class FileUtils {
         $file = new File($dest);
         if ($file->putContent($data)) {
             return $name;
-        }
-        else {
+        } else {
             throw new Exception('文件写入出错');
         }
     }
 
-    public static function initFile($oname, $filesize, $base_dir, $maxsize = 0, $allow = []) {
+    public static function initFile(string $oname, int $filesize, string $base_dir, int $maxsize = 0, array $allow = []) : string
+    {
         if ($maxsize > 0 && $filesize > $maxsize) {
             throw new Exception('文件大小超过限制');
         }
@@ -240,6 +249,7 @@ class FileUtils {
         $file = new File($dest);
         $file->getParent()->mkdir();
         $file->initFile($filesize);
-    }
 
+        return $name;
+    }
 }

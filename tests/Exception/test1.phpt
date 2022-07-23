@@ -6,7 +6,7 @@ require __DIR__ . '/../../vendor/autoload.php';
 
 use Minifw\Common\Exception;
 
-$ex = new Exception("msg", 1, null, ['type' => 'extra']);
+$ex = new Exception('msg', 1, null, ['type' => 'extra']);
 var_dump($ex->getCode());
 var_dump($ex->getMessage());
 var_dump($ex->getExtraMsg());
