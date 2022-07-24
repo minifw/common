@@ -19,6 +19,8 @@
 
 namespace Minifw\Common;
 
+use finfo;
+
 class File
 {
     public static string $defaultFsEncoding = '';
@@ -198,7 +200,7 @@ class File
             if (isset(self::$mimeHash[$ext])) {
                 $mimeType = self::$mimeHash[$ext];
             } else {
-                $fi = new \finfo(FILEINFO_MIME_TYPE);
+                $fi = new finfo(FILEINFO_MIME_TYPE, null);
                 $mimeType = $fi->file($this->fsPath);
             }
 
