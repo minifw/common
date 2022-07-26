@@ -62,6 +62,9 @@ class FileUtils
         return implode('/', $parsed);
     }
 
+    /**
+     * 从路径中截取出开头到第一个 `/` 之间的部分，不存在时返回空字符串.
+     */
     public static function dirname(string $path) : string
     {
         $path = \dirname($path);
@@ -72,16 +75,19 @@ class FileUtils
         return $path;
     }
 
+    /**
+     * 从路径中截取出最后一个 `/` 到末尾的部分，不存在的时候返回完整路径.
+     */
     public static function basename(string $path) : string
     {
-        $pos = strrpos($path, '/');
-        if ($pos === false) {
-            return $path;
-        }
+        $path = basename($path);
 
-        return substr($path, $pos + 1);
+        return $path;
     }
 
+    /**
+     * 从路径中截取出开头到 第一个|最后一个 `.`之间的部分，不存在的时候返回完整路径.
+     */
     public static function filename(string $file, bool $last = true) : string
     {
         $pos = false;
