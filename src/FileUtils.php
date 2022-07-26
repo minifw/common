@@ -162,6 +162,39 @@ class FileUtils
 
     //////////////////////////////////////////////////
 
+    /**
+     * 滚动日志文件.
+     */
+    public static function rotateFile(string $path, string $ext, int $count, $fp = null)
+    {
+        $basename = self::filename($path, true);
+        $dir = self::dirname($path);
+        if (empty($dir)) {
+            throw new Exception('参数不合法');
+        }
+
+        if ($count < 1) {
+            throw new Exception('参数不合法');
+        }
+
+        for ($i = $count;$i > 0;$i--) {
+            $full = $basename . '.' . $i . $ext;
+            if (file_exists($full)) {
+                if ($i >= $count) {
+                    unlink($full);
+                } else {
+                    rename($full, $basename . '.' . ($i + 1) . $ext);
+                }
+            }
+        }
+
+        $bakFile = $basename . '.1' . $ext;
+        copy($path, $bakFile);
+        if ($fp !== null) {
+            ftruncate($fp, 0);
+        }
+    }
+
     public static function uploadFile(array $file, string $base_dir, int $maxsize = 0, array $allow = []) : string
     {
         if (empty($file)) {

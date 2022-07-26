@@ -2,7 +2,7 @@
 Utils test
 --FILE--
 <?php
-require __DIR__ . '/../../vendor/autoload.php';
+require __DIR__ . '/../bootstrap.php';
 
 use Minifw\Common\FileUtils;
 use Minifw\Common\ImageUtils;
