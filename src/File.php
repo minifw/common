@@ -211,7 +211,7 @@ class File
                         $res = array_merge($res, $sub);
                     }
                 } else {
-                    $sub = call_user_func($callable, $obj, $prefix);
+                    $sub = call_user_func($callable, $obj, $prefix . $obj->getName());
                     if ($sub !== null) {
                         $res[] = $sub;
                     }
