@@ -140,55 +140,87 @@ class File
 
     public function ls(string $ext = '', bool $hidden = false) : ?array
     {
-        if (is_dir($this->fsPath)) {
-            $res = [];
-
-            $full = $this->fsPath;
-            if (substr($full, -1) !== '/') {
-                $full .= '/';
-            }
-
-            if ($dh = opendir($full)) {
-                while (($file = readdir($dh)) !== false) {
-                    if ($file === '.' || $file === '..') {
-                        continue;
-                    }
-                    if ($file[0] == '.' && !$hidden) {
-                        continue;
-                    }
-
-                    if ($ext != '') {
-                        if (is_file($full . '/' . $file) && substr($file, -1 * strlen($ext)) != $ext) {
-                            continue;
-                        }
-                    }
-
-                    if (!empty($this->fsEncoding) && $this->fsEncoding != $this->appEncoding) {
-                        $file = iconv($this->fsEncoding, $this->appEncoding, $file);
-                    }
-
-                    $res[] = [
-                        'name' => $file,
-                        'dir' => is_dir($this->appPath . '/' . $file)
-                    ];
-                }
-                closedir($dh);
-            }
-
-            usort($res, function ($left, $right) {
-                if ($left['dir'] == $right['dir']) {
-                    return strcmp($left['name'], $right['name']);
-                } elseif ($left['dir']) {
-                    return -1;
-                }
-
-                return 1;
-            });
-
-            return $res;
-        } else {
+        if (!is_dir($this->fsPath)) {
             return null;
         }
+
+        $list = $this->map(function ($obj, $prefix) use ($hidden, $ext) {
+            $name = $obj->getName();
+            $isDir = $obj->isDir();
+
+            if (!$hidden && $name[0] == '.') {
+                return null;
+            }
+
+            if ($ext !== '') {
+                if ($isDir || substr($name, -1 * strlen($ext)) != $ext) {
+                    return null;
+                }
+            }
+
+            return [
+                'name' => $name,
+                'dir' => $isDir
+            ];
+        }, false);
+
+        usort($list, function ($left, $right) {
+            if ($left['dir'] == $right['dir']) {
+                return strcmp($left['name'], $right['name']);
+            } elseif ($left['dir']) {
+                return -1;
+            }
+
+            return 1;
+        });
+
+        return $list;
+    }
+
+    public function map(callable $callable, bool $includeSub = true, string $prefix = '')
+    {
+        if (!is_dir($this->fsPath)) {
+            return null;
+        }
+
+        $res = [];
+
+        $full = $this->fsPath;
+        if (substr($full, -1) !== '/') {
+            $full .= '/';
+        }
+
+        if ($prefix !== '') {
+            $prefix .= '/';
+        }
+
+        if ($dh = opendir($full)) {
+            while (($file = readdir($dh)) !== false) {
+                if ($file === '.' || $file === '..') {
+                    continue;
+                }
+                if ($file[0] == '.') {
+                    continue;
+                }
+
+                $obj = new self(null, $full . $file);
+
+                if (is_dir($full . $file) && $includeSub) {
+                    $sub = $obj->map($callable, $includeSub, $prefix . $obj->getName());
+                    if ($sub !== null) {
+                        $res = array_merge($res, $sub);
+                    }
+                } else {
+                    $sub = call_user_func($callable, $obj, $prefix);
+                    if ($sub !== null) {
+                        $res[] = $sub;
+                    }
+                }
+            }
+            closedir($dh);
+        }
+
+        return $res;
     }
 
     public function getMime() : ?string
@@ -219,6 +251,21 @@ class File
             }
         }
         readfile($this->fsPath);
+    }
+
+    public function isDir() : bool
+    {
+        return is_dir($this->fsPath);
+    }
+
+    public function isFile() : bool
+    {
+        return is_file($this->fsPath);
+    }
+
+    public function getName() : string
+    {
+        return FileUtils::basename($this->appPath);
     }
 
     ///////////////////////////////////////
