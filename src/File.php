@@ -179,19 +179,24 @@ class File
 
     public function map(callable $callable, bool $includeSub = true, string $prefix = '')
     {
-        if (!is_dir($this->fsPath)) {
-            return null;
+        $res = [];
+
+        if ($prefix !== '') {
+            $prefix .= '/';
         }
 
-        $res = [];
+        if (!is_dir($this->fsPath)) {
+            $sub = call_user_func($callable, $this, $prefix . $this->getName());
+            if ($sub !== null) {
+                return [$sub];
+            }
+
+            return [];
+        }
 
         $full = $this->fsPath;
         if (substr($full, -1) !== '/') {
             $full .= '/';
-        }
-
-        if ($prefix !== '') {
-            $prefix .= '/';
         }
 
         if ($dh = opendir($full)) {
