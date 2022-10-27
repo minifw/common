@@ -213,7 +213,7 @@ class File
                         $loopSub = call_user_func($callable, $obj, $prefix . $obj->getName());
                     }
                     if ($includeSub && $loopSub && ($level > 1 || $level == 0)) {
-                        $obj->walk($callable, $prefix . $obj->getName(), $includeSub, $level - 1);
+                        $obj->walk($callable, $prefix . $obj->getName(), $includeSub, $level - 1, $target);
                     }
                 } else {
                     if ($target & self::LOOP_TARGET_FILE) {
