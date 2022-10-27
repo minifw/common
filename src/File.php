@@ -33,6 +33,8 @@ class File
         'html' => 'text/html',
         'js' => 'text/javascript'
     ];
+    const LOOP_TARGET_DIR = 0x01;
+    const LOOP_TARGET_FILE = 0x02;
 
     public function toFile($appPath, ?string $fsEncoding = null) : self
     {
@@ -162,7 +164,7 @@ class File
                 'name' => $name,
                 'dir' => $isDir
             ];
-        }, false);
+        }, '', false);
 
         usort($list, function ($left, $right) {
             if ($left['dir'] == $right['dir']) {
@@ -177,21 +179,16 @@ class File
         return $list;
     }
 
-    public function map(callable $callable, bool $includeSub = true, string $prefix = '')
+    public function walk(callable $callable, string $prefix = '', bool $includeSub = true, int $level = 0, int $target = self::LOOP_TARGET_DIR | self::LOOP_TARGET_FILE) : void
     {
-        $res = [];
-
         if ($prefix !== '') {
-            $prefix .= '/';
+            $prefix = rtrim($prefix, '\\/') . '/';
         }
 
-        if (!is_dir($this->fsPath)) {
-            $sub = call_user_func($callable, $this, $prefix . $this->getName());
-            if ($sub !== null) {
-                return [$sub];
-            }
+        if (!is_dir($this->fsPath) && ($target & self::LOOP_TARGET_FILE)) {
+            call_user_func($callable, $this, $prefix . $this->getName());
 
-            return [];
+            return;
         }
 
         $full = $this->fsPath;
@@ -210,22 +207,38 @@ class File
 
                 $obj = new self(null, $full . $file);
 
-                if (is_dir($full . $file) && $includeSub) {
-                    $sub = $obj->map($callable, $includeSub, $prefix . $obj->getName());
-                    if ($sub !== null) {
-                        $res = array_merge($res, $sub);
+                if (is_dir($full . $file)) {
+                    $loopSub = true;
+                    if ($target & self::LOOP_TARGET_DIR) {
+                        $loopSub = call_user_func($callable, $obj, $prefix . $obj->getName());
+                    }
+                    if ($includeSub && $loopSub && ($level > 1 || $level == 0)) {
+                        $obj->walk($callable, $prefix . $obj->getName(), $includeSub, $level - 1);
                     }
                 } else {
-                    $sub = call_user_func($callable, $obj, $prefix . $obj->getName());
-                    if ($sub !== null) {
-                        $res[] = $sub;
+                    if ($target & self::LOOP_TARGET_FILE) {
+                        call_user_func($callable, $obj, $prefix . $obj->getName());
                     }
                 }
             }
             closedir($dh);
         }
+    }
 
-        return $res;
+    public function map(callable $callable, string $prefix = '', bool $includeSub = true, int $level = 0, int $target = self::LOOP_TARGET_DIR | self::LOOP_TARGET_FILE)
+    {
+        $ret = [];
+
+        $this->walk(function ($file, $path) use ($callable, &$ret) {
+            $sub = call_user_func($callable, $file, $path);
+            if ($sub !== null) {
+                $ret[] = $sub;
+            }
+
+            return true;
+        }, $prefix, $includeSub, $level, $target);
+
+        return $ret;
     }
 
     public function getMime() : ?string
