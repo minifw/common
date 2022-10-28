@@ -185,8 +185,10 @@ class File
             $prefix = rtrim($prefix, '\\/') . '/';
         }
 
-        if (!is_dir($this->fsPath) && ($target & self::LOOP_TARGET_FILE)) {
-            call_user_func($callable, $this, $prefix . $this->getName());
+        if (!is_dir($this->fsPath)) {
+            if ($target & self::LOOP_TARGET_FILE) {
+                call_user_func($callable, $this, $prefix . $this->getName());
+            }
 
             return;
         }
