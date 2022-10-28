@@ -146,25 +146,33 @@ class File
             return null;
         }
 
-        $list = $this->map(function ($obj, $prefix) use ($hidden, $ext) {
+        $list = [];
+
+        $this->walk(function ($obj, $prefix) use ($hidden, $ext, &$list) {
+            if ($obj === $this) {
+                return true;
+            }
+
             $name = $obj->getName();
             $isDir = $obj->isDir();
 
             if (!$hidden && $name[0] == '.') {
-                return null;
+                return true;
             }
 
             if ($ext !== '') {
                 if ($isDir || substr($name, -1 * strlen($ext)) != $ext) {
-                    return null;
+                    return true;
                 }
             }
 
-            return [
+            $list[] = [
                 'name' => $name,
                 'dir' => $isDir
             ];
-        }, '', false);
+
+            return true;
+        }, '', true, 2);
 
         usort($list, function ($left, $right) {
             if ($left['dir'] == $right['dir']) {
@@ -184,13 +192,22 @@ class File
         if ($prefix !== '') {
             $prefix = rtrim($prefix, '\\/') . '/';
         }
+        $prefix = $prefix . $this->getName();
 
         if (!is_dir($this->fsPath)) {
             if ($target & self::LOOP_TARGET_FILE) {
-                call_user_func($callable, $this, $prefix . $this->getName());
+                call_user_func($callable, $this, $prefix);
             }
 
             return;
+        } else {
+            $loopSub = true;
+            if ($target & self::LOOP_TARGET_DIR) {
+                $loopSub = call_user_func($callable, $this, $prefix);
+            }
+            if (!$loopSub || !$includeSub || ($level <= 1 && $level != 0)) {
+                return;
+            }
         }
 
         $full = $this->fsPath;
@@ -203,25 +220,9 @@ class File
                 if ($file === '.' || $file === '..') {
                     continue;
                 }
-                if ($file[0] == '.') {
-                    continue;
-                }
 
                 $obj = new self(null, $full . $file);
-
-                if (is_dir($full . $file)) {
-                    $loopSub = true;
-                    if ($target & self::LOOP_TARGET_DIR) {
-                        $loopSub = call_user_func($callable, $obj, $prefix . $obj->getName());
-                    }
-                    if ($includeSub && $loopSub && ($level > 1 || $level == 0)) {
-                        $obj->walk($callable, $prefix . $obj->getName(), $includeSub, $level - 1, $target);
-                    }
-                } else {
-                    if ($target & self::LOOP_TARGET_FILE) {
-                        call_user_func($callable, $obj, $prefix . $obj->getName());
-                    }
-                }
+                $obj->walk($callable, $prefix, $includeSub, ($level > 1 ? $level - 1 : $level), $target);
             }
             closedir($dh);
         }

@@ -9,7 +9,7 @@ use Minifw\Common\File;
 $dir = __DIR__ . '/test/';
 $file = new File($dir);
 
-$ret = $file->map(function (File $file, string $path) {
+$ret = $file->map(function (File $file, string $prefix) {
     if ($file->isFile()) {
         return $file->getContent();
     }
