@@ -13,8 +13,8 @@ var_dump(System::getConfig('mysql'));
 
 System::init(__DIR__ . '/config.php');
 
-var_dump(DATA_DIR);
-var_dump(TMP_DIR);
+var_dump(MFW_DATA_DIR);
+var_dump(MFW_TMP_DIR);
 
 ?>
 --EXPECTF--

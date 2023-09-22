@@ -36,24 +36,24 @@ class System
             define('MFW_APP_ROOT', $app_root);
         }
 
-        if (!defined('DEBUG')) {
-            define('DEBUG', self::getConfig('debug', 'enable', 0));
+        if (!defined('MFW_DEBUG')) {
+            define('MFW_DEBUG', self::getConfig('debug', 'enable', 0));
         }
-        if (!defined('DBPREFIX')) {
-            define('DBPREFIX', self::getConfig('main', 'dbprefix', ''));
+        if (!defined('MFW_DBPREFIX')) {
+            define('MFW_DBPREFIX', self::getConfig('main', 'dbprefix', ''));
         }
 
-        if (!defined('DATA_DIR')) {
+        if (!defined('MFW_DATA_DIR')) {
             $path = MFW_APP_ROOT . self::getConfig('path', 'data', '');
-            define('DATA_DIR', $path);
+            define('MFW_DATA_DIR', $path);
             if (!file_exists($path)) {
                 mkdir($path, 0777, true);
             }
         }
 
-        if (!defined('TMP_DIR')) {
+        if (!defined('MFW_TMP_DIR')) {
             $path = MFW_APP_ROOT . self::getConfig('path', 'tmp', '');
-            define('TMP_DIR', $path);
+            define('MFW_TMP_DIR', $path);
             if (!file_exists($path)) {
                 mkdir($path, 0777, true);
             }
