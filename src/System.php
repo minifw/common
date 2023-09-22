@@ -56,6 +56,8 @@ class System
                 mkdir($path, 0777, true);
             }
         }
+
+        date_default_timezone_set(self::getConfig('main', 'timezone', 'PRC'));
     }
 
     public static function loadConfig(string $configFile) : void
