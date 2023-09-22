@@ -42,16 +42,18 @@ class System
         if (!defined('DBPREFIX')) {
             define('DBPREFIX', self::getConfig('main', 'dbprefix', ''));
         }
-        $dirs = [
-            'data' => 'DATA_DIR',
-            'tmp' => 'TMP_DIR',
-        ];
 
-        foreach ($dirs as $key => $name) {
-            if (!defined($name)) {
-                $path = MFW_APP_ROOT . self::getConfig('path', $key, '');
-                define($name, $path);
+        if (!defined('DATA_DIR')) {
+            $path = MFW_APP_ROOT . self::getConfig('path', 'data', '');
+            define('DATA_DIR', $path);
+            if (!file_exists($path)) {
+                mkdir($path, 0777, true);
             }
+        }
+
+        if (!defined('TMP_DIR')) {
+            $path = MFW_APP_ROOT . self::getConfig('path', 'tmp', '');
+            define('TMP_DIR', $path);
             if (!file_exists($path)) {
                 mkdir($path, 0777, true);
             }
