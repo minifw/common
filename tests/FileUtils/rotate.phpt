@@ -7,7 +7,7 @@ use Minifw\Common\FileUtils;
 
 require __DIR__ . '/../bootstrap.php';
 
-$dir = APP_ROOT . '/tmp/tests/rotate';
+$dir = MFW_APP_ROOT . '/tmp/tests/rotate';
 
 if (!file_exists($dir)) {
     mkdir($dir, 0777, true);

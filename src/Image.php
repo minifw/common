@@ -21,9 +21,9 @@ namespace Minifw\Common;
 
 class Image
 {
-    const FORMAT_GIF = 1;
-    const FORMAT_JPG = 2;
-    const FORMAT_PNG = 3;
+    public const FORMAT_GIF = 1;
+    public const FORMAT_JPG = 2;
+    public const FORMAT_PNG = 3;
     public static int $defaultQuality = 90;
     public static int $defaultLevel = 2;
     protected $imageObj = null;
@@ -35,7 +35,7 @@ class Image
     {
     }
 
-    public function loadImage(string $full) : self
+    public function loadImage(string $full): self
     {
         $this->destroy();
 
@@ -49,7 +49,7 @@ class Image
         return $this;
     }
 
-    public function initImage(int $format, int $width, int $height, $bgcolor = null) : self
+    public function initImage(int $format, int $width, int $height, $bgcolor = null): self
     {
         $this->destroy();
         $this->imageObj = ImageUtils::getNewImage($format, $width, $height, $bgcolor);
@@ -60,7 +60,7 @@ class Image
         return $this;
     }
 
-    public function rotate(int $degree) : self
+    public function rotate(int $degree): self
     {
         if ($degree % 90 !== 0) {
             throw new Exception('不支持该操作');
@@ -82,7 +82,7 @@ class Image
         return $this;
     }
 
-    public function merge(string $srcFull, int $dstX, int $dstY, int $srcX, int $srcY, int $dstW, int $dstH, int $srcW, int $srcH) : self
+    public function merge(string $srcFull, int $dstX, int $dstY, int $srcX, int $srcY, int $dstW, int $dstH, int $srcW, int $srcH): self
     {
         $info = ImageUtils::getImageInfo($srcFull);
         $srcObj = ImageUtils::loadImageObj($srcFull, $info['format']);
@@ -92,7 +92,7 @@ class Image
         return $this;
     }
 
-    public function transform(int $newW, int $newH, $bgColor, int $dstX, int $dstY, int $srcX, int $srcY, int $dstW, int $dstH, int $srcW, int $srcH) : self
+    public function transform(int $newW, int $newH, $bgColor, int $dstX, int $dstY, int $srcX, int $srcY, int $dstW, int $dstH, int $srcW, int $srcH): self
     {
         $srcObj = $this->imageObj;
         $this->imageObj = ImageUtils::getNewImage($this->format, $newW, $newH, $bgColor);
@@ -105,7 +105,7 @@ class Image
         return $this;
     }
 
-    public function roundCorner(int $r, int $level = -1, $bgColor = null) : self
+    public function roundCorner(int $r, int $level = -1, $bgColor = null): self
     {
         if ($level < 0) {
             $level = self::$defaultLevel;
@@ -149,7 +149,7 @@ class Image
         return $this;
     }
 
-    public function roundOneCorner(int $r, int $cx, int $cy, int $x, int $y, int $w, int $h, int $level, $bgcolor) : self
+    public function roundOneCorner(int $r, int $cx, int $cy, int $x, int $y, int $w, int $h, int $level, $bgcolor): self
     {
         $br = (($bgcolor >> 16) & 0xFF);
         $bg = (($bgcolor >> 8) & 0xFF);
@@ -175,7 +175,7 @@ class Image
                     $cb = ($color & 0xFF) * $alpah_c + $bg + $bb * $alpha;
                     $ca = (($color >> 24) & 0xFF) * $alpah_c + $ba * $alpha;
 
-                    $color = ($ca / 127) << 24 | ($cr / 127) << 16 | ($cg / 127) << 8 | ($cb / 127);
+                    $color = (int)($ca / 127) << 24 | (int)($cr / 127) << 16 | (int)($cg / 127) << 8 | (int)($cb / 127);
                     imagesetpixel($this->imageObj, $px, $py, $color);
                 }
             }
@@ -184,7 +184,7 @@ class Image
         return $this;
     }
 
-    public function save(string $dest, int $quality = -1) : self
+    public function save(string $dest, int $quality = -1): self
     {
         if ($quality < 0) {
             $quality = self::$defaultQuality;
@@ -206,7 +206,7 @@ class Image
         return $this;
     }
 
-    public function destroy() : void
+    public function destroy(): void
     {
         if ($this->imageObj === null) {
             return;
@@ -218,12 +218,12 @@ class Image
         $this->format = 0;
     }
 
-    public function getFormat() : int
+    public function getFormat(): int
     {
         return $this->format;
     }
 
-    public function getSize() : array
+    public function getSize(): array
     {
         return [$this->width, $this->height];
     }
@@ -235,7 +235,7 @@ class Image
 
     //////////////////////////////////////
 
-    public static function calcAlpha(int $r, int $x, int $y, int $level) : int
+    public static function calcAlpha(int $r, int $x, int $y, int $level): int
     {
         $r2 = $r * $r;
         $offset = $x * $x + $y * $y - $r2;
