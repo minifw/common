@@ -142,22 +142,30 @@ class Utils
      */
     public static function showSize(int $size) : string
     {
-        $unit = ['', ' K', ' M', ' G', ' T', ' P', ' E', ' Z', ' Y'];
-        $cur_unit = 0;
+        $units = ['', ' K', ' M', ' G', ' T', ' P', ' E', ' Z', ' Y'];
 
-        while ($size >= 1024 && $cur_unit < count($unit) - 1) {
+        return self::showInUnits($size, $units, 1024, 3);
+    }
+
+    public static function showInUnits(int $number, array $units, int $base, $precision = 3) : string
+    {
+        $cur_unit = 0;
+        $count = count($units);
+
+        while ($number >= $base && $cur_unit < $count - 1) {
             $cur_unit++;
-            $size = bcdiv($size, 1024, 2);
+            $number = bcdiv($number, $base, $precision - 1);
         }
 
         if ($cur_unit != 0) {
-            if ($size >= 100) {
-                $size = bcdiv($size, 1, 0);
-            } elseif ($size >= 10) {
-                $size = bcdiv($size, 1, 1);
+            for ($i = $precision - 1;$i > 0; $i--) {
+                if ($number >= pow(10, $i)) {
+                    $number = bcdiv($number, 1, 2 - $i);
+                    break;
+                }
             }
         }
 
-        return $size . $unit[$cur_unit];
+        return $number . $units[$cur_unit];
     }
 }
